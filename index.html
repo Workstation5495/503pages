@@ -2,35 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>503pages - System Failure</title>
+    <title>503 Service Unavailable</title>
     <style>
-        body { margin: 0; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; min-height: 300vh; overflow-x: hidden; }
+        body { margin: 0; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; min-height: 400vh; overflow-x: hidden; }
         
         #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 5; background: #fff; }
-        h1 { font-size: 52px; font-weight: 800; border-bottom: 5px solid #000; padding-bottom: 15px; margin-bottom: 40px; }
-        h2 { font-size: 28px; margin-top: 60px; color: #000; text-transform: uppercase; letter-spacing: 1.5px; border-left: 10px solid #000; padding-left: 15px; }
-        p { font-size: 20px; line-height: 1.9; max-width: 1100px; margin-bottom: 35px; text-align: justify; }
+        h1 { font-size: 48px; font-weight: 800; border-bottom: 4px solid #1a1a1a; padding-bottom: 15px; margin-bottom: 40px; }
+        h2 { font-size: 26px; margin-top: 60px; color: #000; text-transform: uppercase; letter-spacing: 1px; }
+        p { font-size: 20px; line-height: 1.8; max-width: 1000px; margin-bottom: 30px; text-align: justify; }
         
         #physics-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         
-        /* Эффекты деградации */
-        .artifact-line { position: fixed; left: 0; width: 100%; height: 2px; z-index: 1000; pointer-events: none; mix-blend-mode: difference; }
-        .code-drop { position: fixed; font-family: monospace; font-size: 14px; font-weight: bold; color: #ff0000; z-index: 900; pointer-events: none; }
-        
-        .chaos-mode { animation: screen-shake 0.08s infinite; filter: contrast(180%) invert(0.05); }
-        .heavy-glitch { filter: hue-rotate(90deg) blur(1px) sepia(1); }
+        .artifact-line { position: fixed; left: 0; width: 100%; height: 1px; z-index: 1000; pointer-events: none; background: #000; opacity: 0.3; }
+        .code-drop { position: fixed; font-family: monospace; font-size: 13px; color: #000; z-index: 900; pointer-events: none; }
 
-        @keyframes screen-shake {
-            0% { transform: translate(3px, 3px); }
-            33% { transform: translate(-3px, -2px); filter: block-glitch; }
-            66% { transform: translate(2px, -3px); }
-            100% { transform: translate(-2px, 2px); }
+        .chaos-mode { animation: glitch-anim 0.1s infinite; }
+        @keyframes glitch-anim {
+            0% { filter: invert(0); transform: translateX(0); }
+            20% { filter: invert(1); transform: translateX(2px); }
+            40% { filter: invert(0); transform: translateX(-2px); }
+            100% { transform: translateX(0); }
         }
 
-        span.char { display: inline-block; transition: color 0.1s; }
+        span.char { display: inline-block; position: relative; }
         span.char.letter { margin-right: 2px; }
-        span.char.space  { margin-right: 12px; }
-        span.char:hover { color: #ff0000; }
+        span.char.space  { margin-right: 10px; }
     </style>
 </head>
 <body>
@@ -38,22 +34,22 @@
 <div id="article-layer">
     <h1>Advanced Microarchitecture: Beyond the Silicon Limit</h1>
     
-    <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node, quantum tunneling becomes the dominant factor in gate leakage, leading to non-deterministic states.</p>
+    <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node and below, quantum tunneling becomes the dominant factor in gate leakage. This occurs when electrons bypass the insulating layer of a transistor, leading to non-deterministic states.</p>
     
     <h2>1. The Nanoscale Interconnect Dilemma</h2>
-    <p class="data">As density increases, copper interconnects degrade due to electromigration—the physical movement of atoms caused by current flow. Industry leaders are now forced to explore graphene-doped substrates to maintain structural integrity under extreme workloads.</p>
+    <p class="data">As density increases, the copper interconnects that carry data across the die are becoming so thin that electromigration—the physical movement of atoms caused by current flow—starts to degrade the wires. To combat this, industry leaders are exploring graphene-doped substrates and backside power delivery systems.</p>
     
     <h2>2. Predictive Speculation and Logic Decay</h2>
-    <p class="data">Modern CPUs rely on branch prediction. However, at maximum voltage, bit-flips in the register file increase exponentially. This results in speculative execution paths that lead into "logic voids," causing the instruction pointer to loop recursively until the die overheats.</p>
+    <p class="data">Modern CPUs rely on complex branch prediction algorithms. However, when a CPU is pushed to its voltage limit, the probability of bit-flips in the register file increases. This results in speculative execution paths that lead into unmapped instruction spaces, causing the silicon to overheat at the gate level.</p>
 
     <h2>3. Sub-Threshold Leakage & Thermal Walls</h2>
-    <p class="data">When transistors shrink below a certain limit, they can no longer be fully turned "off." This sub-threshold leakage creates a constant heat floor, making traditional air and liquid cooling obsolete. The energy efficiency ratio drops, leading to permanent hardware exceptions.</p>
+    <p class="data">As transistors shrink, the threshold voltage required to switch them becomes harder to maintain. Sub-threshold leakage creates a constant flow of energy even in the 'off' state. This builds a thermal wall that cannot be breached by conventional cooling, leading to massive entropy within the logic gates.</p>
 
-    <h2>4. Dark Silicon and Core Throttling</h2>
-    <p class="data">Because of thermal constraints, a large percentage of the chip's surface—known as "Dark Silicon"—must remain powered off at any given time. Attempting to activate all logic gates simultaneously results in an immediate voltage sag and system-wide synchronization failure.</p>
+    <h2>4. Dark Silicon Phenomenon</h2>
+    <p class="data">In modern multi-core designs, the 'Dark Silicon' problem dictates that a significant portion of the chip must remain unpowered to prevent a meltdown. Trying to activate 100% of the die area leads to immediate voltage sag and synchronization failure across the global clock tree.</p>
 
-    <h2>5. The Paradigm Shift to Optical Computing</h2>
-    <p class="data">The only viable future lies in photonic interconnects. By replacing electrons with photons, we bypass the thermal wall entirely. However, the misalignment of a single optical laser on the wafer scale leads to total signal loss and immediate "silicon death."</p>
+    <h2>5. The Finality of Hardware Exception</h2>
+    <p class="data">Once the chemical bonds within the packaging substrate begin to weaken due to sustained heat, the chip enters a state of permanent hardware exception. Threshold voltages drift, logic states become probabilistic, and the instruction pointer begins to loop recursively until the silicon structurally fails.</p>
 </div>
 
 <div id="physics-container"></div>
@@ -61,11 +57,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Body } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
 
 const engine = Engine.create();
-engine.gravity.y = 1.5; // Чуть тяжелее физика
 const world = engine.world;
+engine.gravity.y = 1.2;
 
 const render = Render.create({
     element: document.getElementById('physics-container'),
@@ -78,16 +74,16 @@ const render = Render.create({
     }
 });
 
-// Границы экрана (фиксированные)
-const floor = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 30, window.innerWidth, 60, { isStatic: true });
-const leftWall = Bodies.rectangle(-30, window.innerHeight/2, 60, window.innerHeight, { isStatic: true });
-const rightWall = Bodies.rectangle(window.innerWidth + 30, window.innerHeight/2, 60, window.innerHeight, { isStatic: true });
+// Пол и стенки (фиксированные на экране)
+const floor = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 25, window.innerWidth, 50, { isStatic: true });
+const leftWall = Bodies.rectangle(-25, window.innerHeight/2, 50, window.innerHeight, { isStatic: true });
+const rightWall = Bodies.rectangle(window.innerWidth + 25, window.innerHeight/2, 50, window.innerHeight, { isStatic: true });
 Composite.add(world, [floor, leftWall, rightWall]);
 
 let damage = 0;
 let isDead = false;
 
-// Разбивка текста
+// Подготовка текста
 document.querySelectorAll('.data, h1, h2').forEach(el => {
     const text = el.innerText;
     el.innerHTML = '';
@@ -100,8 +96,8 @@ document.querySelectorAll('.data, h1, h2').forEach(el => {
 });
 
 function spawnCode() {
-    if (isDead || damage < 200) return;
-    const codes = ["CRITICAL_ERR", "0x000000F4", "STACK_OVERFLOW", "VOLTAGE_SAG", "CORE_DUMP"];
+    if (isDead) return;
+    const codes = ["0x000000F4", "0x0000007A", "503_RETRY", "NULL_PTR", "EIP_RECURSE"];
     const div = document.createElement('div');
     div.className = 'code-drop';
     div.innerText = codes[Math.floor(Math.random()*codes.length)];
@@ -111,7 +107,7 @@ function spawnCode() {
     
     let pos = -20;
     const interval = setInterval(() => {
-        pos += 12;
+        pos += 8;
         div.style.top = pos + 'px';
         if (pos > window.innerHeight) { clearInterval(interval); div.remove(); }
     }, 20);
@@ -122,37 +118,34 @@ function spawnArtifact() {
     const line = document.createElement('div');
     line.className = 'artifact-line';
     line.style.top = Math.random() * 100 + '%';
-    line.style.height = Math.random() * 5 + 'px';
-    line.style.background = `rgb(${Math.random()*255}, 0, 0)`;
     document.body.appendChild(line);
-    setTimeout(() => line.remove(), 60);
+    setTimeout(() => line.remove(), 30);
 }
 
 function breakChar(span, explosion = false) {
     if (span.dataset.gone || isDead || !span.classList.contains('letter')) return;
     span.dataset.gone = "true";
 
-    // ПРАВИЛЬНЫЙ РАСЧЕТ: координаты относительно ВЬЮПОРТА (экрана)
     const rect = span.getBoundingClientRect();
     const style = window.getComputedStyle(span);
 
     const cvs = document.createElement('canvas');
-    cvs.width = 50; cvs.height = 50;
+    cvs.width = 40; cvs.height = 40;
     const ctx = cvs.getContext('2d');
-    ctx.fillStyle = style.color;
-    ctx.font = `bold 20px ${style.fontFamily}`;
-    ctx.fillText(span.innerText, 10, 30);
+    ctx.fillStyle = "#000";
+    ctx.font = `${style.fontWeight} 19px ${style.fontFamily}`;
+    ctx.fillText(span.innerText, 5, 25);
 
-    const body = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, 20, 20, {
-        restitution: 0.5,
-        friction: 0.2,
+    const body = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, 16, 16, {
+        restitution: 0.4,
+        friction: 0.1,
         render: { sprite: { texture: cvs.toDataURL() } }
     });
 
     if (explosion) {
         Body.applyForce(body, body.position, {
-            x: (Math.random() - 0.5) * 0.15,
-            y: (Math.random() - 0.5) * 0.15
+            x: (Math.random() - 0.5) * 0.1,
+            y: (Math.random() - 0.5) * 0.1
         });
     }
 
@@ -160,23 +153,40 @@ function breakChar(span, explosion = false) {
     Composite.add(world, body);
     damage++;
 
-    // Нарастание эффектов
-    if (damage % 15 === 0) spawnArtifact();
-    if (damage > 100 && Math.random() > 0.8) spawnCode();
+    if (damage % 12 === 0) spawnArtifact();
+    if (damage % 25 === 0) spawnCode();
     if (damage > 400) document.body.classList.add('chaos-mode');
-    if (damage > 800) document.body.classList.add('heavy-glitch');
 
-    if (damage > 1500 && !isDead) {
+    if (damage > 1200 && !isDead) {
         isDead = true;
-        document.body.innerHTML = '<div style="background:#000; color:#ff0000; height:100vh; padding:100px; font-family:monospace; font-size:24px;"><h1>SYSTEM HALTED</h1><p>Hardware failure detected at gate level.</p><p>Memory dumped. Goodbye.</p></div>';
+        document.body.innerHTML = `
+            <div style="background:#fff; height:100vh; padding:50px; font-family:Arial; color:#000;">
+                <h1 style="font-weight:normal; border-bottom:1px solid #ccc; padding-bottom:10px;">503 Service Unavailable</h1>
+                <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
+                <hr>
+                <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
+            </div>
+        `;
+        document.body.className = '';
         Render.stop(render);
         Runner.stop(runner);
     }
 }
 
-// Взаимодействие
+// Эффект прыжка букв при скролле
+let lastScroll = window.scrollY;
+window.addEventListener('scroll', () => {
+    let delta = window.scrollY - lastScroll;
+    lastScroll = window.scrollY;
+    
+    Composite.allBodies(world).forEach(b => {
+        if (!b.isStatic) {
+            Body.applyForce(b, b.position, { x: 0, y: -delta * 0.0002 });
+        }
+    });
+});
+
 window.addEventListener('mousemove', (e) => {
-    // Ищем элемент под мышкой учитывая скролл
     const el = document.elementFromPoint(e.clientX, e.clientY);
     if (el && el.classList.contains('char')) breakChar(el);
 });
@@ -185,15 +195,14 @@ window.addEventListener('mousedown', (e) => {
     document.querySelectorAll('.char.letter:not([data-gone])').forEach(char => {
         const rect = char.getBoundingClientRect();
         const dist = Math.hypot(rect.left - e.clientX, rect.top - e.clientY);
-        if (dist < 180) breakChar(char, true);
+        if (dist < 150) breakChar(char, true);
     });
 });
 
-// Фикс ресайза
 window.addEventListener('resize', () => {
     render.canvas.width = window.innerWidth;
     render.canvas.height = window.innerHeight;
-    Body.setPosition(floor, { x: window.innerWidth/2, y: window.innerHeight + 30 });
+    Body.setPosition(floor, { x: window.innerWidth/2, y: window.innerHeight + 25 });
 });
 
 const runner = Runner.create();
