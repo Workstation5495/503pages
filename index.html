@@ -2,28 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SITE_30</title>
+    <title>WIKI_PHYSICS_BREAKER</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; background: #fff; font-family: sans-serif; }
+        #render-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
-        /* Та самая белая ошибка */
+        /* Та самая ошибка 503 */
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 50px; box-sizing: border-box; z-index: 1000;
+            background: #fff; color: #000; padding: 50px; z-index: 1000; cursor: pointer;
         }
-        #error-msg { font-family: "Times New Roman", serif; font-size: 18px; }
-
-        /* Финальное восстановление */
-        #final-msg {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fff; font-size: 50px; font-weight: bold; z-index: 2000; text-align: center;
-        }
+        #error-screen h1 { font-family: "Times New Roman", serif; font-size: 32px; }
+        
+        #instructions { position: fixed; bottom: 10px; left: 10px; color: #ccc; font-size: 10px; pointer-events: none; }
     </style>
 </head>
 <body>
 
+<div id="instructions">DRAG TO BREAK | CLICKS TO CRASH</div>
+<div id="render-container"></div>
+
 <div id="error-screen">
-    <div id="error-msg">
+    <div id="err-text">
         <h1>503 Service Unavailable</h1>
         <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
         <hr>
@@ -31,76 +31,122 @@
     </div>
 </div>
 
-<div id="final-msg">ALWAYS IN TOUCH</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
 const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
-const engine = Engine.create();
-const render = Render.create({
-    element: document.body,
-    engine: engine,
-    options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
-});
 
-const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 50, window.innerWidth, 100, { isStatic: true });
-Composite.add(engine.world, ground);
+let engine, render, runner;
+let clickCount = 0;
 
-async function run() {
-    try {
-        // Берем список из 30 страниц
-        const res = await fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=30&origin=*');
-        const data = await res.json();
-        const pool = data.query.random;
+function initPhysics() {
+    if (engine) {
+        Composite.clear(engine.world);
+        Engine.clear(engine);
+        Render.stop(render);
+        Runner.stop(runner);
+        render.canvas.remove();
+    }
 
-        // Выбираем ОДНУ из 30 для этой сессии
-        const selected = pool[Math.floor(Math.random() * 30)];
+    engine = Engine.create();
+    render = Render.create({
+        element: document.getElementById('render-container'),
+        engine: engine,
+        options: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            wireframes: false,
+            background: '#fff'
+        }
+    });
 
-        // Грузим её текст
-        const cRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(selected.title)}&format=json&origin=*`);
-        const cData = await cRes.json();
-        const text = Object.values(cData.query.pages)[0].extract || "CONNECTION_ERROR";
+    const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 50, window.innerWidth, 100, { isStatic: true });
+    const wallL = Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, { isStatic: true });
+    const wallR = Bodies.rectangle(window.innerWidth + 50, window.innerHeight/2, 100, window.innerHeight, { isStatic: true });
+    Composite.add(engine.world, [ground, wallL, wallR]);
 
-        // Дробим на 30 кусков и бросаем в физику
-        const fragments = text.split('. ').slice(0, 30);
-        fragments.forEach((fragment, i) => {
-            setTimeout(() => {
-                const box = Bodies.rectangle(
-                    Math.random() * window.innerWidth, -100,
-                    Math.min(fragment.length * 8, 300), 40, {
-                    render: { fillStyle: '#111', strokeStyle: '#fff', lineWidth: 1 }
-                });
-                Composite.add(engine.world, box);
-            }, i * 200);
-        });
-    } catch (e) {}
+    const mouse = Mouse.create(render.canvas);
+    const mc = MouseConstraint.create(engine, { mouse: mouse });
+    Composite.add(engine.world, mc);
+
+    Render.run(render);
+    runner = Runner.create();
+    Runner.run(runner, engine);
+
+    loadNewArticle();
 }
 
-const mouse = Mouse.create(render.canvas);
-const mc = MouseConstraint.create(engine, { mouse: mouse });
-Composite.add(engine.world, mc);
+async function loadNewArticle() {
+    clickCount = 0;
+    document.getElementById('error-screen').style.display = 'none';
+    
+    try {
+        // Берем рандомную статью
+        const res = await fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=1&origin=*');
+        const data = await res.json();
+        const title = data.query.random[0].title;
 
-let clicks = 0;
-window.addEventListener('mousedown', () => {
-    clicks++;
-    if(clicks > 15) {
-        document.getElementById('error-screen').style.display = 'block';
-        setTimeout(() => {
-            const msg = document.getElementById('error-msg');
-            msg.style.transition = 'transform 3s ease-in';
-            msg.style.transform = 'translateY(110vh) rotate(15deg)';
+        // Берем текст статьи
+        const contentRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(title)}&format=json&origin=*`);
+        const contentData = await contentRes.json();
+        const pages = contentData.query.pages;
+        const text = pages[Object.keys(pages)[0]].extract || "Empty Article";
+
+        // Создаем заголовок как тяжелый блок
+        const tBox = Bodies.rectangle(window.innerWidth/2, 100, title.length * 20, 60, {
+            render: { sprite: { texture: createTextTexture(title, 40, true) } }
+        });
+        Composite.add(engine.world, tBox);
+
+        // Создаем фрагменты текста
+        const fragments = text.split('. ').slice(0, 20);
+        fragments.forEach((frag, i) => {
             setTimeout(() => {
-                document.getElementById('error-screen').style.background = '#000';
-                document.getElementById('final-msg').style.display = 'block';
-            }, 2500);
-        }, 3000);
+                const b = Bodies.rectangle(
+                    Math.random() * window.innerWidth, 
+                    -50, 
+                    Math.min(frag.length * 8, 400), 
+                    30, 
+                    { render: { sprite: { texture: createTextTexture(frag.substring(0, 50), 14, false) } } }
+                );
+                Composite.add(engine.world, b);
+            }, i * 150);
+        });
+    } catch (e) { console.error("Wiki error"); }
+}
+
+function createTextTexture(text, size, isTitle) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = isTitle ? 800 : 450;
+    canvas.height = 80;
+    ctx.font = `${isTitle ? 'bold' : ''} ${size}px sans-serif`;
+    ctx.fillStyle = isTitle ? '#000' : '#333';
+    ctx.fillText(text, 10, 50);
+    return canvas.toDataURL();
+}
+
+// Слушатель кликов для поломки
+window.addEventListener('mousedown', () => {
+    clickCount++;
+    if (clickCount > 15) {
+        document.getElementById('error-screen').style.display = 'block';
     }
 });
 
-Render.run(render);
-Runner.run(Runner.create(), engine);
-run();
+// Реалистичный распад ошибки и рестарт
+document.getElementById('error-screen').addEventListener('click', () => {
+    const errText = document.getElementById('err-text');
+    errText.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+    errText.style.transform = 'scale(0) rotate(180deg)';
+    
+    setTimeout(() => {
+        errText.style.transform = 'scale(1) rotate(0deg)';
+        initPhysics(); // Загружаем новую страницу
+    }, 800);
+});
+
+initPhysics();
 </script>
 </body>
 </html>
