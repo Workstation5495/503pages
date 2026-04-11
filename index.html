@@ -1,103 +1,75 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Silicon Decay OS</title>
+    <title>503pages</title>
     <style>
-        :root { --bg: #f4f4f4; --text: #1a1a1a; }
-        body { 
-            margin: 0; background: var(--bg); font-family: "Segoe UI", Tahoma, sans-serif; 
-            color: var(--text); overflow-x: hidden; min-height: 200vh;
-        }
+        body { margin: 0; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; min-height: 200vh; }
+        #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 5; background: #fff; }
+        h1 { font-size: 48px; font-weight: 800; border-bottom: 4px solid #000; padding-bottom: 15px; margin-bottom: 40px; }
+        h2 { font-size: 26px; margin-top: 50px; color: #000; text-transform: uppercase; letter-spacing: 1px; }
+        p { font-size: 19px; line-height: 1.8; max-width: 1000px; margin-bottom: 30px; text-align: justify; }
         
-        /* Слой статьи */
-        #article-layer { 
-            position: relative; width: 100%; padding: 100px 10%; box-sizing: border-box; 
-            z-index: 5; pointer-events: none; 
-        }
-        h1 { font-size: clamp(32px, 5vw, 64px); border-left: 8px solid #000; padding-left: 20px; margin-bottom: 60px; }
-        h2 { font-size: 24px; margin-top: 40px; opacity: 0.8; }
-        p { font-size: 20px; line-height: 1.6; max-width: 800px; text-align: justify; }
-
-        /* Контейнер для физики */
-        #physics-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
-
-        /* Эффекты */
-        .char { display: inline-block; pointer-events: auto; transition: transform 0.1s; position: relative; }
-        .char:hover { color: #ff0000; text-shadow: 2px 2px 0px #00ffff; }
+        /* Слой физики теперь фиксированный */
+        #physics-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         
-        .glitch-flash { animation: flash 0.2s steps(2); }
-        @keyframes flash {
-            0% { opacity: 1; filter: invert(0); }
-            50% { opacity: 0.5; filter: invert(1) scale(1.2); }
-            100% { opacity: 1; filter: invert(0); }
+        .artifact-line { position: fixed; left: 0; width: 100%; height: 2px; z-index: 1000; pointer-events: none; }
+        .code-drop { position: fixed; font-family: monospace; font-size: 12px; color: #000; z-index: 900; pointer-events: none; white-space: nowrap; }
+
+        .chaos-mode { animation: screen-shake 0.05s infinite; filter: contrast(200%) brightness(150%); }
+        @keyframes screen-shake {
+            0% { transform: translate(4px, -4px); filter: invert(1); }
+            50% { transform: translate(-4px, 4px); filter: hue-rotate(180deg); }
+            100% { transform: translate(2px, 2px); }
         }
 
-        .chaos-mode { animation: shake 0.1s infinite; filter: contrast(150%) sepia(20%); }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -1px); }
-        }
-
-        /* Ошибка */
-        #error-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; z-index: 99999; padding: 10%; font-family: monospace;
-        }
+        span.char { display: inline-block; cursor: crosshair; }
+        span.char.letter { margin-right: 4px; }
+        span.char.space  { margin-right: 10px; }
     </style>
 </head>
 <body>
 
 <div id="article-layer">
     <h1>Advanced Microarchitecture: Beyond the Silicon Limit</h1>
-    <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node and below, quantum tunneling becomes the dominant factor in gate leakage. This occurs when electrons bypass the insulating layer of a transistor, leading to non-deterministic states.</p>
+    <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node and below, quantum tunneling becomes the dominant factor in gate leakage. This occurs when electrons bypass the insulating layer of a transistor, leading to non-deterministic states and massive thermal dissipation that threatens structural integrity.</p>
     
     <h2>1. The Nanoscale Interconnect Dilemma</h2>
-    <p class="data">As density increases, the copper interconnects that carry data across the die are becoming so thin that electromigration—the physical movement of atoms caused by current flow—starts to degrade the wires. industry leaders are exploring graphene-doped substrates and backside power delivery systems (BSPDN).</p>
+    <p class="data">As density increases, the copper interconnects that carry data across the die are becoming so thin that electromigration—the physical movement of atoms caused by current flow—starts to degrade the wires. To combat this, industry leaders are exploring graphene-doped substrates and backside power delivery systems (BSPDN).</p>
     
-    <h2>2. Logic Decay & Speculative Execution</h2>
-    <p class="data">Modern CPUs rely on complex branch prediction algorithms. However, when a CPU is pushed to its voltage limit, the probability of bit-flips increases. This results in speculative execution paths that lead into "logic voids." Once the processor enters these unmapped spaces, the instruction pointer (EIP) begins to loop recursively.</p>
+    <h2>2. Predictive Speculation and Logic Decay</h2>
+    <p class="data">Modern CPUs rely on complex branch prediction algorithms. However, when a CPU is pushed to its voltage limit, the probability of bit-flips in the register file increases. This results in speculative execution paths that lead into "logic voids." Once the processor enters these unmapped instruction spaces, the instruction pointer (EIP) begins to loop recursively, causing the silicon to overheat at the gate level.</p>
 </div>
 
 <div id="physics-container"></div>
-<div id="error-overlay">
-    <h1>CRITICAL_PROCESS_DIED</h1>
-    <p>A problem has been detected and the system has been shut down to prevent damage to your hardware.</p>
-    <p>ERROR_CODE: 0x00000050 (PAGE_FAULT_IN_NONPAGED_AREA)</p>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Body } = Matter;
 
-// --- Инициализация движка ---
 const engine = Engine.create();
 const world = engine.world;
-engine.gravity.y = 1.2;
 
 const render = Render.create({
     element: document.getElementById('physics-container'),
     engine: engine,
-    options: {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        wireframes: false,
-        background: 'transparent'
+    options: { 
+        width: window.innerWidth, 
+        height: window.innerHeight, 
+        wireframes: false, 
+        background: 'transparent' 
     }
 });
 
-// Стенки, чтобы буквы не улетали
-const walls = [
-    Bodies.rectangle(window.innerWidth/2, window.innerHeight + 50, window.innerWidth, 100, { isStatic: true }),
-    Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, { isStatic: true }),
-    Bodies.rectangle(window.innerWidth + 50, window.innerHeight/2, 100, window.innerHeight, { isStatic: true })
-];
-Composite.add(world, walls);
+// Стенки и пол (чтобы буквы не улетали за края)
+const floor = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 25, window.innerWidth, 50, { isStatic: true });
+const leftWall = Bodies.rectangle(-25, window.innerHeight/2, 50, window.innerHeight, { isStatic: true });
+const rightWall = Bodies.rectangle(window.innerWidth + 25, window.innerHeight/2, 50, window.innerHeight, { isStatic: true });
+Composite.add(world, [floor, leftWall, rightWall]);
 
-// --- Подготовка текста ---
 let damage = 0;
-const maxDamage = 600;
+let isDead = false;
 
 document.querySelectorAll('.data, h1, h2').forEach(el => {
     const text = el.innerText;
@@ -110,107 +82,101 @@ document.querySelectorAll('.data, h1, h2').forEach(el => {
     });
 });
 
-// --- Логика разрушения ---
-function breakChar(span, force = 1) {
-    if (span.dataset.gone || span.classList.contains('space')) return;
-    
-    // Сначала "глючим"
-    if (!span.dataset.cracked) {
-        span.dataset.cracked = "1";
-        span.classList.add('glitch-flash');
-        span.style.transform = `translate(${(Math.random()-0.5)*10}px, ${(Math.random()-0.5)*10}px) rotate(${(Math.random()-0.5)*20}deg)`;
-        damage += 0.5;
-        return;
-    }
+function spawnCode() {
+    if (isDead || damage < 200) return;
+    const codes = ["0x000000F4", "0x0000007A", "0x0000007B", "0x0000000A", "0x000000F7"];
+    const div = document.createElement('div');
+    div.className = 'code-drop';
+    div.innerText = codes[Math.floor(Math.random()*codes.length)];
+    div.style.left = Math.random() * 100 + '%';
+    div.style.top = '-20px';
+    document.body.appendChild(div);
+    let pos = -20;
+    const interval = setInterval(() => {
+        pos += 10;
+        div.style.top = pos + 'px';
+        if (pos > window.innerHeight) { clearInterval(interval); div.remove(); }
+    }, 30);
+}
 
-    // Потом отрываем
+function spawnArtifact() {
+    if (isDead) return;
+    const line = document.createElement('div');
+    line.className = 'artifact-line';
+    line.style.top = Math.random() * 100 + '%';
+    line.style.background = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.6)`;
+    document.body.appendChild(line);
+    setTimeout(() => line.remove(), 40);
+}
+
+function breakChar(span, explosion = false) {
+    if (span.dataset.gone || isDead || !span.classList.contains('letter')) return;
     span.dataset.gone = "true";
+
     const rect = span.getBoundingClientRect();
     const style = window.getComputedStyle(span);
 
-    // Рисуем букву на текстуру
-    const canvas = document.createElement('canvas');
-    canvas.width = 64; canvas.height = 64;
-    const ctx = canvas.getContext('2d');
+    const cvs = document.createElement('canvas');
+    cvs.width = 40; cvs.height = 40;
+    const ctx = cvs.getContext('2d');
     ctx.fillStyle = style.color;
-    ctx.font = `bold 24px ${style.fontFamily}`;
-    ctx.textAlign = 'center';
-    ctx.fillText(span.innerText, 32, 40);
+    ctx.font = `${style.fontWeight} 19px ${style.fontFamily}`;
+    ctx.fillText(span.innerText, 5, 25);
 
-    const letterBody = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, 20, 20, {
-        restitution: 0.4,
+    // Создаем тело. Учитываем scroll, чтобы буква падала оттуда, где она сейчас на экране
+    const body = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, 18, 18, {
+        restitution: 0.6,
         friction: 0.1,
-        render: { sprite: { texture: canvas.toDataURL(), xScale: 1, yScale: 1 } }
+        render: { sprite: { texture: cvs.toDataURL() } }
     });
 
-    // Импульс при взрыве (клике)
-    if (force > 1) {
-        Body.applyForce(letterBody, letterBody.position, {
-            x: (Math.random() - 0.5) * 0.1 * force,
-            y: (Math.random() - 0.5) * 0.1 * force
+    if (explosion) {
+        Body.applyForce(body, body.position, {
+            x: (Math.random() - 0.5) * 0.08,
+            y: (Math.random() - 0.5) * 0.08
         });
     }
 
     span.style.visibility = 'hidden';
-    Composite.add(world, letterBody);
+    Composite.add(world, body);
     damage++;
 
-    // Визуальные стадии деградации
-    if (damage > 100) document.body.style.filter = `contrast(${100 + damage/5}%)`;
+    if (damage % 10 === 0) spawnArtifact();
+    if (damage > 150) spawnCode();
     if (damage > 300) document.body.classList.add('chaos-mode');
-    
-    if (damage > maxDamage) {
-        document.getElementById('error-overlay').style.display = 'block';
+
+    if (damage > 1200 && !isDead) {
+        isDead = true;
+        document.body.innerHTML = '<div style="background:#fff; height:100vh; padding:50px; font-family:Arial;"><h1>503 Service Unavailable</h1><hr><address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1</address></div>';
+        Render.stop(render);
+        Runner.stop(runner);
     }
 }
 
-// --- Обработка событий ---
-
-// Скролл смещает физические тела (эффект инерции)
-let lastScrollY = window.scrollY;
-window.addEventListener('scroll', () => {
-    const delta = window.scrollY - lastScrollY;
-    const allBodies = Composite.allBodies(world);
-    allBodies.forEach(body => {
-        if (!body.isStatic) {
-            Body.setPosition(body, { x: body.position.x, y: body.position.y - delta });
-        }
-    });
-    lastScrollY = window.scrollY;
-});
-
-// Разрушение при движении мыши
+// Слушаем скролл и обновляем положение букв в мире
 window.addEventListener('mousemove', (e) => {
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (el && el.classList.contains('char')) {
-        breakChar(el, 0.5);
-    }
+    if (el && el.classList.contains('char')) breakChar(el);
 });
 
-// Взрыв при клике
 window.addEventListener('mousedown', (e) => {
-    const chars = document.querySelectorAll('.char.letter:not([data-gone])');
-    chars.forEach(char => {
+    document.querySelectorAll('.char.letter:not([data-gone])').forEach(char => {
         const rect = char.getBoundingClientRect();
         const dist = Math.hypot(rect.left - e.clientX, rect.top - e.clientY);
-        if (dist < 120) {
-            // Задержка для эффекта цепной реакции
-            setTimeout(() => breakChar(char, 2), dist / 2);
-        }
+        if (dist < 150) breakChar(char, true);
     });
 });
 
-// Адаптивность при изменении окна
+// Обновление размеров при ресайзе
 window.addEventListener('resize', () => {
     render.canvas.width = window.innerWidth;
     render.canvas.height = window.innerHeight;
-    Body.setPosition(walls[0], { x: window.innerWidth/2, y: window.innerHeight + 50 });
+    Body.setPosition(floor, { x: window.innerWidth/2, y: window.innerHeight + 25 });
 });
 
 const runner = Runner.create();
 Render.run(render);
 Runner.run(runner, engine);
-
 </script>
 </body>
 </html>
