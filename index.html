@@ -95,13 +95,22 @@ document.querySelectorAll('.data, h1, h2').forEach(el => {
 
 function spawnCode() {
     if (isDead || damage < 200) return;
-    const codes = ["0x000000F4", "SEGMENT_FAULT", "STACK_OVERFLOW", "CORE_DUMPED", "CRITICAL_ERR"];
+    const codes = ["0x000000F4", "0x0000007A", "0x0000007B", "0x0000000A", "0x000000F7", "0xc000000f", "0x0000001E"];
     const div = document.createElement('div');
     div.className = 'code-drop';
     div.innerText = codes[Math.floor(Math.random()*codes.length)];
     div.style.left = Math.random() * 100 + '%';
     div.style.top = '-20px';
+    div.style.color = '#000'; // Устанавливаем черный цвет напрямую
     document.body.appendChild(div);
+    
+    let pos = -20;
+    const interval = setInterval(() => {
+        pos += 10;
+        div.style.top = pos + 'px';
+        if (pos > window.innerHeight) { clearInterval(interval); div.remove(); }
+    }, 30);
+}
     
     let pos = -20;
     const interval = setInterval(() => {
