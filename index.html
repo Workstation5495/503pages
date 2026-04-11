@@ -2,40 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>30_STATIONS_STOCHASTIC_SYSTEM</title>
+    <title>TERMINAL</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
-        #system-log { position: absolute; top: 10px; left: 10px; color: #0f0; font-size: 11px; z-index: 10; background: rgba(0,0,0,0.8); padding: 5px; border: 1px solid #0f0; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: monospace; }
+        #log { position: absolute; top: 10px; left: 10px; color: #0f0; font-size: 11px; z-index: 10; }
         
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; color: #000; padding: 50px; z-index: 1000;
         }
-        #error-content { font-family: "Times New Roman", serif; }
+        #error-content { font-family: serif; }
 
         #final-msg {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: #fff; font-size: 50px; font-weight: bold; text-align: center; z-index: 2000;
-            letter-spacing: 12px; filter: blur(0.5px); text-shadow: 0 0 15px #00f;
+            letter-spacing: 12px; text-shadow: 0 0 15px #00f;
         }
     </style>
 </head>
 <body>
 
-<div id="system-log">
-    [SYSTEM_INIT]... OK<br>
-    [POOL_SIZE]: 30 ARTICLES<br>
-    [SESSION_PICK]: <span id="active-id">SELECTING...</span><br>
-    [TOPIC]: <span id="topic">CONNECTING...</span>
+<div id="log">
+    ID: <span id="active-id">...</span><br>
+    TOPIC: <span id="topic">...</span>
 </div>
 
 <div id="error-screen">
     <div id="error-content">
-        <h1 style="font-size: 32px; border-bottom: 1px solid #000;">503 Service Unavailable</h1>
-        <p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>
-        <p>User interaction limit exceeded. Memory dump initiated.</p>
+        <h1>503 Service Unavailable</h1>
+        <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems.</p>
         <hr>
-        <address>Web-Server/2.0.1 (Experimental) Port 80</address>
+        <address>Apache/2.4.41 (Ubuntu) Server</address>
     </div>
 </div>
 
@@ -57,50 +54,50 @@ Composite.add(engine.world, ground);
 
 async function runSession() {
     try {
-        // 1. Генерируем "пул" из 30 случайных ID/статей
-        const res = await fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=30&origin=*');
+        // Запрос 30 случайных статей
+        const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=30&origin=*";
+        const res = await fetch(url);
         const data = await res.json();
         const pool = data.query.random;
 
-        // 2. Выбираем РАНДОМНО ОДНУ из этих 30
-        const randomIndex = Math.floor(Math.random() * 30);
-        const selected = pool[randomIndex];
+        // Выбор 1 из 30
+        const idx = Math.floor(Math.random() * 30);
+        const selected = pool[idx];
         
-        document.getElementById('active-id').innerText = `ID_${randomIndex + 1}_OF_30`;
+        document.getElementById('active-id').innerText = idx + 1;
         document.getElementById('topic').innerText = selected.title.toUpperCase();
 
-        // 3. Загружаем текст ИМЕННО ЭТОЙ статьи
-        const contentRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(selected.title)}&format=json&origin=*`);
-        const contentData = await contentRes.json();
-        const pages = contentData.query.pages;
-        const pageId = Object.keys(pages)[0];
-        const text = pages[pageId].extract || "DATA_STREAM_EMPTY";
+        // Загрузка контента выбранной статьи
+        const contentUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(selected.title)}&format=json&origin=*`;
+        const cRes = await fetch(contentUrl);
+        const cData = await cRes.json();
+        const pages = cData.query.pages;
+        const text = pages[Object.keys(pages)[0]].extract || "NO_DATA";
 
-        // 4. Дробим её на 30 физических кусков
+        // Создание 30 фрагментов
         const lines = text.split('. ').slice(0, 30);
         lines.forEach((line, i) => {
-            if(line.length < 5) return;
+            if (line.length < 3) return;
             setTimeout(() => {
                 const box = Bodies.rectangle(
-                    Math.random() * window.innerWidth, -100,
-                    Math.min(line.length * 8, 400), 35, {
-                    render: { sprite: { texture: makeLabel(line.substring(0, 45)) } }
+                    Math.random() * window.innerWidth, -50,
+                    Math.min(line.length * 7, 350), 30, {
+                    render: { sprite: { texture: makeLabel(line.substring(0, 50)) } }
                 });
                 Composite.add(engine.world, box);
-            }, i * 250);
+            }, i * 200);
         });
-
-    } catch (e) { console.error("FATAL_ERROR: CONNECTION_REJECTED"); }
+    } catch (e) { document.getElementById('topic').innerText = "CONNECTION_ERROR"; }
 }
 
 function makeLabel(str) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 450; canvas.height = 40;
-    ctx.fillStyle = '#111'; ctx.fillRect(0,0,450,40);
-    ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2; ctx.strokeRect(0,0,450,40);
-    ctx.fillStyle = '#0f0'; ctx.font = '13px Courier New';
-    ctx.fillText(str.toUpperCase(), 15, 25);
+    canvas.width = 400; canvas.height = 40;
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,400,40);
+    ctx.strokeStyle = '#0f0'; ctx.strokeRect(0,0,400,40);
+    ctx.fillStyle = '#0f0'; ctx.font = '12px monospace';
+    ctx.fillText(str.toUpperCase(), 10, 25);
     return canvas.toDataURL();
 }
 
@@ -111,21 +108,19 @@ Composite.add(engine.world, mouseConstraint);
 let clicks = 0;
 window.addEventListener('mousedown', () => {
     clicks++;
-    if(clicks > 12) crashSystem();
-});
-
-function crashSystem() {
-    document.getElementById('error-screen').style.display = 'block';
-    setTimeout(() => {
-        const err = document.getElementById('error-content');
-        err.style.transition = 'all 2.5s ease-in';
-        err.style.transform = 'translateY(120vh) rotate(-10deg) scale(0.5)';
+    if (clicks > 12) {
+        document.getElementById('error-screen').style.display = 'block';
         setTimeout(() => {
-            document.getElementById('error-screen').style.background = '#000';
-            document.getElementById('final-msg').style.display = 'block';
-        }, 2200);
-    }, 3500);
-}
+            const err = document.getElementById('error-content');
+            err.style.transition = 'all 2s ease-in';
+            err.style.transform = 'translateY(110vh) rotate(10deg)';
+            setTimeout(() => {
+                document.getElementById('error-screen').style.background = '#000';
+                document.getElementById('final-msg').style.display = 'block';
+            }, 2000);
+        }, 3000);
+    }
+});
 
 Render.run(render);
 Runner.run(Runner.create(), engine);
