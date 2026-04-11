@@ -6,54 +6,57 @@
     <style>
         body { margin: 0; overflow: hidden; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; }
         #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 5; background: #fff; }
-        h1 { font-size: 50px; border-bottom: 3px solid #000; padding-bottom: 10px; }
-        h2 { font-size: 28px; margin-top: 40px; color: #0044cc; }
-        p { font-size: 19px; line-height: 1.7; max-width: 950px; margin-bottom: 25px; }
+        h1 { font-size: 48px; font-weight: 800; border-bottom: 4px solid #000; padding-bottom: 15px; margin-bottom: 40px; }
+        h2 { font-size: 26px; margin-top: 50px; color: #000; text-transform: uppercase; letter-spacing: 1px; }
+        p { font-size: 19px; line-height: 1.8; max-width: 1000px; margin-bottom: 30px; text-align: justify; }
         
-        .artifact-line { position: fixed; left: 0; width: 100%; height: 1px; background: rgba(0,0,0,0.2); z-index: 100; pointer-events: none; }
-        .dead-pixel { position: fixed; background: #000; width: 4px; height: 4px; z-index: 200; pointer-events: none; }
+        /* Глитч-эффекты */
+        .artifact-line { position: fixed; left: 0; width: 100%; height: 2px; z-index: 1000; pointer-events: none; }
+        .code-drop { position: fixed; font-family: monospace; font-size: 12px; color: #0f0; z-index: 900; pointer-events: none; white-space: nowrap; }
 
+        /* Настоящая 503 */
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 80px; z-index: 1000000; font-family: "Times New Roman", serif;
+            background: #fff; color: #000; padding: 50px; z-index: 1000000; font-family: "Arial", sans-serif;
         }
-        #error-screen h1 { font-size: 40px; border-bottom: 2px solid #000; margin-bottom: 30px; width: fit-content; }
+        #error-screen h1 { font-size: 32px; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; font-weight: normal; }
+        #error-screen p { font-size: 16px; color: #333; }
         
-        canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 50; }
+        canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 100; }
         
-        .hard-glitch { animation: flash 0.1s infinite; }
-        @keyframes flash {
-            0% { filter: invert(0) contrast(1); }
-            50% { filter: invert(1) contrast(5); transform: scale(1.01); }
-            100% { filter: invert(0) contrast(1); }
+        .chaos-mode { animation: screen-shake 0.05s infinite; filter: contrast(200%) brightness(150%); }
+        @keyframes screen-shake {
+            0% { transform: translate(4px, -4px); filter: invert(1); }
+            50% { transform: translate(-4px, 4px); filter: hue-rotate(180deg); }
+            100% { transform: translate(2px, 2px); }
         }
     </style>
 </head>
 <body>
 
 <div id="article-layer">
-    <h1>Advanced Microarchitecture & Quantum Effects</h1>
-    <p class="data">The journey beyond 2nm nodes represents a fundamental shift in computing. Traditional silicon-based transistors are reaching their physical limits due to electron tunneling. When the gate oxide layer becomes too thin, electrons simply pass through it, creating a "leaky" state that generates immense heat and data corruption.</p>
+    <h1>Advanced Microarchitecture: Beyond the Silicon Limit</h1>
     
-    <h2>1. The Rise of Backside Power Delivery</h2>
-    <p class="data">Intel’s PowerVia and TSMC’s backside rail technologies are the current solution. By moving power delivery to the back of the wafer, interconnect congestion is reduced. However, this increases mechanical stress on the crystalline structure, making the CPU vulnerable to micro-fractures during high-voltage spikes.</p>
+    <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node and below, quantum tunneling becomes the dominant factor in gate leakage. This occurs when electrons bypass the insulating layer of a transistor, leading to non-deterministic states and massive thermal dissipation that threatens structural integrity.</p>
     
-    <h2>2. Cache Coherency and Logic Failure</h2>
-    <p class="data">In a multi-tile (chiplet) design, the Infinity Fabric or NVLink must maintain absolute synchronization. If a single packet is delayed by even a picosecond, the instruction pointer can jump to an invalid memory region. This results in "Undefined Behavior" where the hardware begins to execute its own memory as code.</p>
+    <h2>1. The Nanoscale Interconnect Dilemma</h2>
+    <p class="data">As density increases, the copper interconnects that carry data across the die are becoming so thin that electromigration—the physical movement of atoms caused by current flow—starts to degrade the wires. To combat this, industry leaders are exploring graphene-doped substrates and backside power delivery systems (BSPDN). Without these, the latency between cache hits would grow exponentially, rendering multi-core systems inefficient.</p>
     
-    <h2>3. Thermal Cascading</h2>
-    <p class="data">When a hot spot forms near the Arithmetic Logic Unit (ALU), it triggers a cascade. Nearby transistors lose their switching speed, leading to logic errors. The system attempts to throttle, but if the cooling solution fails, the silicon reaches a "glass transition temperature" where the physical circuit melts into noise.</p>
+    <h2>2. Predictive Speculation and Logic Decay</h2>
+    <p class="data">Modern CPUs rely on complex branch prediction algorithms. However, when a CPU is pushed to its voltage limit, the probability of bit-flips in the register file increases. This results in speculative execution paths that lead into "logic voids." Once the processor enters these unmapped instruction spaces, the instruction pointer (EIP) begins to loop recursively, causing the silicon to overheat at the gate level.</p>
     
-    <h2>4. Speculative Execution Risks</h2>
-    <p class="data">Modern branch predictors use neural networks to guess the next 1000 instructions. If a malicious interrupt occurs during this prediction, the CPU can be forced into an infinite loop, exhausting the register file and causing a hardware-level exception that the OS cannot catch.</p>
+    <h2>3. Thermal Throttling and Die Dissolution</h2>
+    <p class="data">At temperatures exceeding 105°C, the chemical bonds within the packaging substrate begin to weaken. Thermal throttling can only slow down the process; it cannot stop a full-scale ionic migration if the cooling loop fails. Once the logic gates lose their threshold voltage, the chip enters a state of permanent hardware exception, often referred to as "silicon death."</p>
+
+    <h2>4. The Future of Photonic Compute</h2>
+    <p class="data">Moving from electrons to photons for on-chip communication is the only way to bypass the current thermal wall. Photonic interconnects would allow for near-zero latency and zero heat generation from data transfer. However, integrating lasers directly onto silicon wafers remains a manufacturing nightmare, as any slight misalignment leads to immediate signal loss and total system halt.</p>
 </div>
 
 <div id="error-screen">
     <h1>503 Service Unavailable</h1>
-    <p>CRITICAL_HARDWARE_DISSOLUTION: The requested resource is unavailable due to an irrecoverable logic-gate failure on the host processor.</p>
+    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
     <hr>
-    <address>Apache Server Status: [ OFFLINE ]</address>
-    <p style="margin-top: 50px; font-weight: bold;">PLEASE REFRESH THE BROWSER TO ATTEMPT COLD REBOOT.</p>
+    <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
 </div>
 
 <div id="physics-container"></div>
@@ -61,7 +64,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Constraint } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Vector, Body } = Matter;
 
 const engine = Engine.create();
 const world = engine.world;
@@ -74,49 +77,53 @@ const render = Render.create({
 const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*2, 100, { isStatic: true });
 Composite.add(world, [ground]);
 
-const mouse = Mouse.create(render.canvas);
-const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.05, render: { visible: false } } });
-Composite.add(world, mc);
-
-let corruption = 0;
+let damage = 0;
 let isDead = false;
 
-// Создаем "живой" текст
+// Подготовка букв
 document.querySelectorAll('.data, h1, h2').forEach(el => {
     const text = el.innerText;
     el.innerHTML = '';
     text.split('').forEach(char => {
         const span = document.createElement('span');
         span.innerText = char;
-        span.style.display = 'inline-block';
         span.className = 'char';
+        span.style.display = 'inline-block';
         el.appendChild(span);
     });
 });
 
-function addGlitch() {
+function spawnCode() {
+    if (isDead || damage < 200) return;
+    const codes = ["0x000000F4", "SEGMENT_FAULT", "STACK_OVERFLOW", "CORE_DUMPED", "CRITICAL_ERR"];
+    const div = document.createElement('div');
+    div.className = 'code-drop';
+    div.innerText = codes[Math.floor(Math.random()*codes.length)];
+    div.style.left = Math.random() * 100 + '%';
+    div.style.top = '-20px';
+    document.body.appendChild(div);
+    
+    let pos = -20;
+    const interval = setInterval(() => {
+        pos += 10;
+        div.style.top = pos + 'px';
+        if (pos > window.innerHeight) { clearInterval(interval); div.remove(); }
+    }, 30);
+}
+
+function spawnArtifact() {
     if (isDead) return;
-    // Линии артефактов
     const line = document.createElement('div');
     line.className = 'artifact-line';
     line.style.top = Math.random() * 100 + '%';
-    line.style.background = `rgba(${Math.random()*255},0,0,0.5)`;
+    line.style.background = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, 0.6)`;
     document.body.appendChild(line);
-    setTimeout(() => line.remove(), 50);
-
-    // Битые пиксели
-    if (Math.random() > 0.8) {
-        const p = document.createElement('div');
-        p.className = 'dead-pixel';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.top = Math.random() * 100 + '%';
-        document.body.appendChild(p);
-    }
+    setTimeout(() => line.remove(), 40);
 }
 
-function breakChar(span) {
-    if (span.dataset.torn || isDead || span.innerText.trim() === "") return;
-    span.dataset.torn = "true";
+function breakChar(span, explosion = false) {
+    if (span.dataset.gone || isDead || span.innerText.trim() === "") return;
+    span.dataset.gone = "true";
     
     const rect = span.getBoundingClientRect();
     const style = window.getComputedStyle(span);
@@ -128,41 +135,42 @@ function breakChar(span) {
     ctx.font = `bold 18px ${style.fontFamily}`;
     ctx.fillText(span.innerText, 0, 30);
 
-    const body = Bodies.rectangle(rect.left, rect.top, 12, 12, {
-        restitution: 0.1,
+    const body = Bodies.rectangle(rect.left, rect.top, 15, 15, {
+        restitution: 0.5,
         render: { sprite: { texture: canvas.toDataURL() } }
     });
 
+    if (explosion) {
+        const force = 0.05;
+        Body.applyForce(body, body.position, { 
+            x: (Math.random() - 0.5) * force, 
+            y: (Math.random() - 0.5) * force 
+        });
+    }
+
     span.style.visibility = 'hidden';
     Composite.add(world, body);
-    corruption++;
+    damage++;
 
-    if (corruption > 30) addGlitch();
-    if (corruption > 150) document.body.classList.add('hard-glitch');
+    if (damage % 5 === 0) spawnArtifact();
+    if (damage > 150) spawnCode();
+    if (damage > 300) document.body.classList.add('chaos-mode');
 
-    // ФИНАЛЬНЫЙ УДАР
-    if (corruption > 500 && !isDead) {
+    if (damage > 800 && !isDead) {
         isDead = true;
-        
-        // Жесткая очистка всего
-        document.body.innerHTML = ''; 
-        
-        // Создаем заново только экран ошибки
+        document.body.innerHTML = '';
         const err = document.createElement('div');
         err.id = 'error-screen';
         err.style.display = 'block';
         err.innerHTML = `
             <h1>503 Service Unavailable</h1>
-            <p>CRITICAL_SYSTEM_FAILURE: The processor has undergone permanent silicon degradation.</p>
+            <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
             <hr>
-            <address>Status: [ HARDWARE_HALTED ]</address>
-            <p style="margin-top: 50px;">F5 TO REBOOT</p>
+            <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
         `;
         document.body.appendChild(err);
         document.body.style.background = '#fff';
         document.body.className = '';
-        
-        // Стоп машина
         Render.stop(render);
         Runner.stop(runner);
     }
@@ -173,13 +181,14 @@ window.addEventListener('mousemove', (e) => {
     if (el && el.className === 'char') breakChar(el);
 });
 
-// Клик вызывает мощный "выброс напряжения"
 window.addEventListener('mousedown', (e) => {
-    const chars = document.querySelectorAll('.char:not([data-torn])');
-    for (let i = 0; i < 50; i++) {
-        const r = Math.floor(Math.random() * chars.length);
-        if (chars[r]) breakChar(chars[r]);
-    }
+    const chars = document.querySelectorAll('.char:not([data-gone])');
+    // Взрыв вокруг места клика
+    chars.forEach(char => {
+        const rect = char.getBoundingClientRect();
+        const dist = Math.hypot(rect.left - e.clientX, rect.top - e.clientY);
+        if (dist < 150) breakChar(char, true);
+    });
 });
 
 const runner = Runner.create();
