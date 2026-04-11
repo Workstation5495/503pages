@@ -2,37 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TERMINAL</title>
+    <title>SITE_30</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: monospace; }
-        #log { position: absolute; top: 10px; left: 10px; color: #0f0; font-size: 11px; z-index: 10; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
         
+        /* Та самая белая ошибка */
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 50px; z-index: 1000;
+            background: #fff; color: #000; padding: 50px; box-sizing: border-box; z-index: 1000;
         }
-        #error-content { font-family: serif; }
+        #error-msg { font-family: "Times New Roman", serif; font-size: 18px; }
 
+        /* Финальное восстановление */
         #final-msg {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fff; font-size: 50px; font-weight: bold; text-align: center; z-index: 2000;
-            letter-spacing: 12px; text-shadow: 0 0 15px #00f;
+            color: #fff; font-size: 50px; font-weight: bold; z-index: 2000; text-align: center;
         }
     </style>
 </head>
 <body>
 
-<div id="log">
-    ID: <span id="active-id">...</span><br>
-    TOPIC: <span id="topic">...</span>
-</div>
-
 <div id="error-screen">
-    <div id="error-content">
+    <div id="error-msg">
         <h1>503 Service Unavailable</h1>
-        <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems.</p>
+        <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
         <hr>
-        <address>Apache/2.4.41 (Ubuntu) Server</address>
+        <address>Apache/2.4.41 (Ubuntu) Server at localhost Port 80</address>
     </div>
 </div>
 
@@ -52,79 +47,60 @@ const render = Render.create({
 const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 50, window.innerWidth, 100, { isStatic: true });
 Composite.add(engine.world, ground);
 
-async function runSession() {
+async function run() {
     try {
-        // Запрос 30 случайных статей
-        const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=30&origin=*";
-        const res = await fetch(url);
+        // Берем список из 30 страниц
+        const res = await fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=30&origin=*');
         const data = await res.json();
         const pool = data.query.random;
 
-        // Выбор 1 из 30
-        const idx = Math.floor(Math.random() * 30);
-        const selected = pool[idx];
-        
-        document.getElementById('active-id').innerText = idx + 1;
-        document.getElementById('topic').innerText = selected.title.toUpperCase();
+        // Выбираем ОДНУ из 30 для этой сессии
+        const selected = pool[Math.floor(Math.random() * 30)];
 
-        // Загрузка контента выбранной статьи
-        const contentUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(selected.title)}&format=json&origin=*`;
-        const cRes = await fetch(contentUrl);
+        // Грузим её текст
+        const cRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(selected.title)}&format=json&origin=*`);
         const cData = await cRes.json();
-        const pages = cData.query.pages;
-        const text = pages[Object.keys(pages)[0]].extract || "NO_DATA";
+        const text = Object.values(cData.query.pages)[0].extract || "CONNECTION_ERROR";
 
-        // Создание 30 фрагментов
-        const lines = text.split('. ').slice(0, 30);
-        lines.forEach((line, i) => {
-            if (line.length < 3) return;
+        // Дробим на 30 кусков и бросаем в физику
+        const fragments = text.split('. ').slice(0, 30);
+        fragments.forEach((fragment, i) => {
             setTimeout(() => {
                 const box = Bodies.rectangle(
-                    Math.random() * window.innerWidth, -50,
-                    Math.min(line.length * 7, 350), 30, {
-                    render: { sprite: { texture: makeLabel(line.substring(0, 50)) } }
+                    Math.random() * window.innerWidth, -100,
+                    Math.min(fragment.length * 8, 300), 40, {
+                    render: { fillStyle: '#111', strokeStyle: '#fff', lineWidth: 1 }
                 });
                 Composite.add(engine.world, box);
             }, i * 200);
         });
-    } catch (e) { document.getElementById('topic').innerText = "CONNECTION_ERROR"; }
-}
-
-function makeLabel(str) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 400; canvas.height = 40;
-    ctx.fillStyle = '#000'; ctx.fillRect(0,0,400,40);
-    ctx.strokeStyle = '#0f0'; ctx.strokeRect(0,0,400,40);
-    ctx.fillStyle = '#0f0'; ctx.font = '12px monospace';
-    ctx.fillText(str.toUpperCase(), 10, 25);
-    return canvas.toDataURL();
+    } catch (e) {}
 }
 
 const mouse = Mouse.create(render.canvas);
-const mouseConstraint = MouseConstraint.create(engine, { mouse: mouse });
-Composite.add(engine.world, mouseConstraint);
+const mc = MouseConstraint.create(engine, { mouse: mouse });
+Composite.add(engine.world, mc);
 
 let clicks = 0;
 window.addEventListener('mousedown', () => {
     clicks++;
-    if (clicks > 12) {
+    if(clicks > 15) {
         document.getElementById('error-screen').style.display = 'block';
         setTimeout(() => {
-            const err = document.getElementById('error-content');
-            err.style.transition = 'all 2s ease-in';
-            err.style.transform = 'translateY(110vh) rotate(10deg)';
+            const msg = document.getElementById('error-msg');
+            msg.style.transition = 'transform 3s ease-in';
+            msg.style.transform = 'translateY(110vh) rotate(15deg)';
             setTimeout(() => {
                 document.getElementById('error-screen').style.background = '#000';
                 document.getElementById('final-msg').style.display = 'block';
-            }, 2000);
+            }, 2500);
         }, 3000);
     }
 });
 
 Render.run(render);
 Runner.run(Runner.create(), engine);
-runSession();
+run();
 </script>
 </body>
 </html>
