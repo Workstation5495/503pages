@@ -2,56 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>503pages</title>
+    <title>Central Processing Unit: Comprehensive Architecture</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff; font-family: serif; user-select: none; }
-        #web-page { position: absolute; width: 100%; padding: 60px; box-sizing: border-box; z-index: 1; }
-        .token { display: inline-block; position: relative; transition: transform 0.1s, filter 0.1s; cursor: grab; }
-        h1 { font-size: 60px; margin: 0; }
-        p { font-size: 22px; max-width: 850px; line-height: 1.4; }
+        body { margin: 0; overflow: hidden; background: #fff; font-family: "Times New Roman", serif; color: #000; user-select: none; }
+        #article-layer { position: absolute; width: 100%; padding: 50px; box-sizing: border-box; z-index: 1; }
+        h1 { font-size: 48px; margin-bottom: 10px; }
+        h2 { font-size: 28px; border-bottom: 1px solid #000; }
+        p { font-size: 18px; line-height: 1.6; max-width: 900px; text-align: justify; }
+        
+        #error-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; color: #000; padding: 50px; z-index: 10000; font-family: sans-serif;
+        }
+        #error-screen h1 { font-size: 32px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
         
         canvas { position: fixed; top: 0; left: 0; pointer-events: none; }
-        #physics-container { pointer-events: auto; }
-        
-        #error-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; z-index: 2000; padding: 100px; box-sizing: border-box;
-        }
-        .shaking { animation: shake 0.05s infinite; }
-        @keyframes shake {
-            0% { transform: translate(2px, 2px); }
-            50% { transform: translate(-2px, -2px); }
-            100% { transform: translate(0, 0); }
-        }
     </style>
 </head>
 <body>
 
-<div id="web-page">
-    <h1 id="title">Architecture: CPU_CORE_STABILITY</h1>
-    <p id="p1">Central processing units are built on billions of transistors. When the voltage exceeds the safety threshold, logic gates begin to leak. This leads to irreversible data corruption.</p>
-    <p id="p2">Instructions become noise. Memory addresses point to the void. The silicon starts to melt under the pressure of execution. The system is trying to maintain integrity, but it is failing.</p>
+<div id="article-layer">
+    <h1>Architecture of the Central Processing Unit</h1>
+    <p class="data-text">The central processing unit (CPU) is the primary component of a computer that acts as its "control center." A CPU, also known as a central processor, main processor or just processor, is the electronic circuitry that executes instructions comprising a computer program.</p>
+    
+    <h2>1. Core Components</h2>
+    <p class="data-text">Modern CPUs are incredibly complex. At the most basic level, a CPU is composed of a control unit, an arithmetic logic unit (ALU), and various registers. The ALU is responsible for logical and mathematical operations, while the control unit directs the flow of data.</p>
+    
+    <h2>2. Cache Hierarchy</h2>
+    <p class="data-text">To minimize the time it takes to access data from the main memory (RAM), CPUs use layers of high-speed memory called cache. Level 1 (L1) cache is the fastest and smallest, typically integrated directly into the CPU core.</p>
+    
+    <h2>3. Instruction Cycle</h2>
+    <p class="data-text">The operation of a CPU can be broken down into a series of steps known as the fetch-decode-execute cycle. First, the CPU fetches the instruction from memory. Then, it decodes the instruction to determine what action is required. Finally, it executes the operation.</p>
 </div>
 
-<div id="error-overlay">
-    <h1 style="color:red">503 Service Unavailable</h1>
-    <p>CRITICAL_SYSTEM_DISSOLUTION_DETECTED</p>
+<div id="error-screen">
+    <h1>503 Service Unavailable</h1>
+    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
     <hr>
-    <address>Apache/INTERNAL_REBOOT_INITIATED</address>
+    <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
 </div>
 
 <div id="physics-container"></div>
-<canvas id="glitch-canvas"></canvas>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events, Body } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Body } = Matter;
 
-let totalDamage = 0;
-let isDead = false;
-
-// Инициализация физики
 const engine = Engine.create();
 const world = engine.world;
 const render = Render.create({
@@ -60,133 +57,92 @@ const render = Render.create({
     options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
 });
 
-// Стены (но они будут ломаться!)
-let bounds = [
-    Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*2, 100, { isStatic: true }),
-    Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true }),
-    Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true })
-];
-Composite.add(world, bounds);
+const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*2, 100, { isStatic: true });
+const wallL = Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true });
+const wallR = Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true });
+Composite.add(world, [ground, wallL, wallR]);
 
 const mouse = Mouse.create(render.canvas);
-const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.1, render: { visible: false } } });
+const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.2, render: { visible: false } } });
 Composite.add(world, mc);
 
-// Разрезаем текст на слова, но оставляем их "живыми" на странице
-function prepareText() {
-    const p1 = document.getElementById('p1');
-    const p2 = document.getElementById('p2');
-    const title = document.getElementById('title');
-    
-    [title, p1, p2].forEach(el => {
-        const words = el.innerText.split(' ');
-        el.innerHTML = '';
-        words.forEach(word => {
-            const span = document.createElement('span');
-            span.className = 'token';
-            span.innerText = word + ' ';
-            el.appendChild(span);
-        });
+let lettersCount = 0;
+let isCrashed = false;
+
+// Разбиваем текст на отдельные буквы
+document.querySelectorAll('.data-text, h1, h2').forEach(el => {
+    const text = el.innerText;
+    el.innerHTML = '';
+    text.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.innerText = char;
+        span.style.display = 'inline-block';
+        span.style.position = 'relative';
+        span.className = 'letter';
+        el.appendChild(span);
     });
-}
+});
 
-// Вырывание слова в физический мир
-function tearOff(el) {
-    if (el.dataset.torn) return;
-    el.dataset.torn = "true";
+// Функция превращения буквы в физический объект
+function dropLetter(span) {
+    if (span.dataset.dropped || span.innerText.trim() === "") return;
+    span.dataset.dropped = "true";
     
-    const rect = el.getBoundingClientRect();
-    const fontSize = window.getComputedStyle(el).fontSize;
+    const rect = span.getBoundingClientRect();
+    const style = window.getComputedStyle(span);
     
-    const can = document.createElement('canvas');
-    const ctx = can.getContext('2d');
-    can.width = rect.width * 2;
-    can.height = rect.height * 2;
-    ctx.font = `bold ${fontSize} serif`;
-    ctx.fillText(el.innerText, 0, rect.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = 40; canvas.height = 40;
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    ctx.fillText(span.innerText, 0, 30);
 
-    const body = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, rect.width, rect.height, {
-        restitution: 0.6,
-        friction: 0.1,
-        render: { sprite: { texture: can.toDataURL() } }
+    const letterBody = Bodies.rectangle(rect.left, rect.top, 15, 15, {
+        restitution: 0.5,
+        render: { sprite: { texture: canvas.toDataURL() } }
     });
-    
-    el.style.visibility = 'hidden';
-    Composite.add(world, body);
-    totalDamage++;
-    
-    checkCorruption();
-}
 
-function checkCorruption() {
-    // Чем больше урона, тем хуже сайту
-    if (totalDamage > 5) document.body.style.filter = `contrast(${1 + totalDamage/20})`;
-    if (totalDamage > 15) {
-        document.body.classList.add('shaking');
-        // Шрифты начинают "плыть"
-        document.querySelectorAll('.token').forEach(t => {
-            if(Math.random() > 0.8) t.style.fontFamily = 'monospace';
-            if(Math.random() > 0.9) t.style.transform = `rotate(${Math.random()*20}deg) scale(${Math.random()+0.5})`;
-        });
+    span.style.visibility = 'hidden';
+    Composite.add(world, letterBody);
+    lettersCount++;
+
+    // Эффекты прогрессирующей поломки
+    if (lettersCount > 20) {
+        document.body.style.filter = `hue-rotate(${lettersCount}deg)`;
+        if (Math.random() > 0.9) document.body.style.transform = `skewX(${(Math.random()-0.5)*5}deg)`;
     }
-    
-    // Смерть системы
-    if (totalDamage > 40 && !isDead) {
-        isDead = true;
-        trigger503();
+
+    // Критическая масса букв — ВЫЛЕТ В 503
+    if (lettersCount > 200 && !isCrashed) {
+        isCrashed = true;
+        setTimeout(() => {
+            document.getElementById('article-layer').style.display = 'none';
+            document.getElementById('physics-container').style.display = 'none';
+            document.getElementById('error-screen').style.display = 'block';
+            document.body.style.filter = 'none';
+            document.body.style.transform = 'none';
+            document.body.style.background = '#fff';
+        }, 500);
     }
 }
 
-function trigger503() {
-    const overlay = document.getElementById('error-overlay');
-    overlay.style.display = 'block';
-    
-    // Ошибка тоже физична!
-    setTimeout(() => {
-        const errTitle = overlay.querySelector('h1');
-        const rect = errTitle.getBoundingClientRect();
-        const errBody = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, rect.width, rect.height, {
-            restitution: 0.9,
-            render: { fillStyle: 'red' }
-        });
-        Composite.add(world, errBody);
-        
-        // Авто-перезагрузка через 3 секунды после распада ошибки
-        setTimeout(() => location.reload(), 3000);
-    }, 1000);
-}
-
-// Глитчи на канвасе
-const gCanvas = document.getElementById('glitch-canvas');
-const gCtx = gCanvas.getContext('2d');
-gCanvas.width = window.innerWidth; gCanvas.height = window.innerHeight;
-
-Events.on(engine, 'afterUpdate', () => {
-    if (totalDamage > 20 && Math.random() > 0.9) {
-        gCtx.fillStyle = Math.random() > 0.5 ? '#ff000022' : '#0000ff22';
-        gCtx.fillRect(0, Math.random()*window.innerHeight, window.innerWidth, Math.random()*20);
-    }
-    if (totalDamage > 30) {
-        // Стены улетают!
-        bounds.forEach(b => Body.translate(b, { x: (Math.random()-0.5)*5, y: (Math.random()-0.5)*5 }));
+// Взаимодействие: буквы отлетают при наведении или клике
+window.addEventListener('mousemove', (e) => {
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    if (target && target.className === 'letter') {
+        dropLetter(target);
     }
 });
 
-// Взаимодействие
-window.addEventListener('mouseover', (e) => {
-    if (e.target.className === 'token') {
-        if (Math.random() > 0.7) tearOff(e.target);
+window.addEventListener('mousedown', () => {
+    // При клике буквы разлетаются сильнее
+    const letters = document.querySelectorAll('.letter:not([data-dropped])');
+    for (let i = 0; i < 10; i++) {
+        const rand = Math.floor(Math.random() * letters.length);
+        if (letters[rand]) dropLetter(letters[rand]);
     }
 });
 
-window.addEventListener('mousedown', (e) => {
-    if (e.target.className === 'token') tearOff(e.target);
-    // Рисуем "битые пиксели" при клике
-    gCtx.fillStyle = '#000';
-    gCtx.fillRect(e.clientX-20, e.clientY-20, 40, 40);
-});
-
-prepareText();
 Render.run(render);
 Runner.run(Runner.create(), engine);
 </script>
