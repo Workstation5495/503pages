@@ -2,34 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WIKI_DESTRUCTION</title>
+    <title>WIKI_PHYSICS</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff; font-family: 'Times New Roman', serif; }
+        body { margin: 0; overflow: hidden; background: #fff; }
         #render-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
-        /* Та самая официальная ошибка 503 */
+        /* Та самая белая ошибка */
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 50px; z-index: 1000; cursor: pointer;
-            box-sizing: border-box; border: 10px solid #eee;
+            background: #fff; color: #000; padding: 60px; z-index: 1000; cursor: pointer;
+            box-sizing: border-box; font-family: "Times New Roman", serif;
         }
-        #error-screen h1 { font-size: 32px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-        
-        #ui { position: fixed; top: 10px; left: 10px; font-family: monospace; font-size: 10px; color: #aaa; z-index: 5; }
+        #error-screen h1 { font-size: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        #error-screen p { font-size: 20px; }
     </style>
 </head>
 <body>
 
-<div id="ui">SESSION: ACTIVE | TARGET: WIKIPEDIA_LOCAL_STOCKS</div>
 <div id="render-container"></div>
 
-<div id="error-screen" onclick="resetAll()">
+<div id="error-screen" onclick="reconstruct()">
     <div id="err-text">
         <h1>503 Service Unavailable</h1>
         <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
-        <p><i>Click anywhere to reconstruct system...</i></p>
-        <hr>
-        <address>Apache/2.4.41 (Ubuntu) Server at localhost Port 80</address>
+        <p style="margin-top: 50px; color: #888;">[ SYSTEM_FAILURE: CLICK_TO_REBOOT ]</p>
     </div>
 </div>
 
@@ -41,38 +37,17 @@ const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Ma
 let engine, render, runner;
 let clicks = 0;
 
-// Список из 30 разных тем, чтобы каждый раз был новый "сайт"
 const articles = [
-    {t: "Artificial Intelligence", c: "AI is intelligence demonstrated by machines, as opposed to natural intelligence."},
-    {t: "Quantum Mechanics", c: "A fundamental theory in physics that provides a description of the physical properties of nature."},
-    {t: "Black Hole", c: "A region of spacetime where gravity is so strong that nothing can escape from it."},
-    {t: "Ancient Egypt", c: "A civilization of ancient Northeast Africa, concentrated along the lower reaches of the Nile."},
-    {t: "Cyberpunk", c: "A subgenre of science fiction in a futuristic setting that tends to focus on high tech."},
-    {t: "Biology", c: "The scientific study of life. It is a natural science with a broad scope."},
-    {t: "Internet", c: "The global system of interconnected computer networks that use the TCP/IP protocol."},
-    {t: "Mathematics", c: "Includes the study of such topics as quantity, structure, space, and change."},
-    {t: "Industrial Design", c: "A process of design applied to products that are to be manufactured through techniques."},
-    {t: "Philosophy", c: "The study of general and fundamental questions, such as those about existence and reason."},
-    {t: "Neuroscience", c: "The scientific study of the nervous system. It is a multidisciplinary science."},
-    {t: "Deep Sea", c: "The lowest layer in the ocean, existing below the thermocline and above the seabed."},
-    {t: "Robotics", c: "Interdisciplinary branch of computer science and engineering. Robotics involves design."},
-    {t: "Chemistry", c: "The scientific study of the properties and behavior of matter. It is a natural science."},
-    {t: "World War II", c: "A global war that lasted from 1939 to 1945. It involved the vast majority of countries."},
-    {t: "Architecture", c: "Both the process and the product of planning, designing, and constructing buildings."},
-    {t: "Astronomy", c: "Natural science that studies celestial objects and phenomena."},
-    {t: "Music Theory", c: "The study of the practices and possibilities of music. It is often concerned with analyzing."},
-    {t: "Microbiology", c: "The scientific study of microorganisms, those being unicellular, multicellular, or acellular."},
-    {t: "Linguistics", c: "The scientific study of language. It involves analyzing language form, meaning, and context."},
-    {t: "Volcanology", c: "The study of volcanoes, lava, magma, and related geological, geophysical and geochemical phenomena."},
-    {t: "Psychology", c: "The science of mind and behavior. Psychology includes the study of conscious and unconscious."},
-    {t: "Typography", c: "The art and technique of arranging type to make written language legible and appealing."},
-    {t: "Nanotechnology", c: "The use of matter on an atomic, molecular, and supramolecular scale for industrial purposes."},
-    {t: "Genetics", c: "The study of genes, genetic variation, and heredity in organisms."},
-    {t: "Photography", c: "The art, application, and practice of creating durable images by recording light."},
-    {t: "Cinema", c: "Also called a movie, motion picture or moving picture, is a work of visual art."},
-    {t: "Ecology", c: "The study of the relationships between living organisms, including humans, and their environment."},
-    {t: "Paleontology", c: "The scientific study of life that existed prior to, and sometimes including, the start of the Holocene."},
-    {t: "Blockchain", c: "A growing list of records, called blocks, that are linked together using cryptography."}
+    {t: "QUANTUM GRAVITY", c: "THEORETICAL PHYSICS ATTEMPTING TO DESCRIBE GRAVITY ACCORDING TO QUANTUM MECHANICS"},
+    {t: "CYBERNETICS", c: "CONTROL AND COMMUNICATION IN THE ANIMAL AND THE MACHINE COMPLEX SYSTEMS"},
+    {t: "VOID AESTHETICS", c: "THE STUDY OF EMPTY SPACES AND MINIMALIST DIGITAL STRUCTURES"},
+    {t: "ARTIFICIAL INTELLIGENCE", c: "NON-BIOLOGICAL ENTITIES CAPABLE OF PROCESSING COMPLEX DATA STREAMS"},
+    {t: "ENTROPY", c: "THE GRADUAL DECLINE INTO DISORDER WITHIN A CLOSED PHYSICAL SYSTEM"},
+    {t: "NEURAL NETWORK", c: "COMPUTATIONAL MODELS INSPIRED BY THE BIOLOGICAL STRUCTURE OF BRAINS"},
+    {t: "EVENT HORIZON", c: "A BOUNDARY BEYOND WHICH EVENTS CANNOT AFFECT AN OBSERVER"},
+    {t: "SIMULATION THEORY", c: "PROPOSAL THAT ALL REALITY IS AN ARTIFICIAL MATHEMATICAL CONSTRUCT"},
+    {t: "NANOTECHNOLOGY", c: "MANIPULATION OF MATTER ON AN ATOMIC AND MOLECULAR SCALE"},
+    {t: "DARK MATTER", c: "A FORM OF MATTER THAT DOES NOT EMIT LIGHT OR ENERGY"}
 ];
 
 function init() {
@@ -86,26 +61,76 @@ function init() {
     render = Render.create({
         element: document.getElementById('render-container'),
         engine: engine,
-        options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: '#fff' }
+        options: { 
+            width: window.innerWidth, 
+            height: window.innerHeight, 
+            wireframes: false, 
+            background: '#fff' 
+        }
     });
 
-    const walls = [
-        Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth, 100, {isStatic:true}),
-        Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, {isStatic:true}),
-        Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight, {isStatic:true})
-    ];
-    Composite.add(engine.world, walls);
+    const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth, 100, {isStatic:true});
+    const wallL = Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, {isStatic:true});
+    const wallR = Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight, {isStatic:true});
+    Composite.add(engine.world, [ground, wallL, wallR]);
 
     const mouse = Mouse.create(render.canvas);
     Composite.add(engine.world, MouseConstraint.create(engine, {mouse: mouse}));
 
-    // Выбираем ОДНУ статью из 30
-    const art = articles[Math.floor(Math.random() * 30)];
+    const art = articles[Math.floor(Math.random() * articles.length)];
     
-    // Создаем "Сайт" (Заголовок + Текст)
-    const title = Bodies.rectangle(window.innerWidth/2, 150, 600, 60, {
-        render: { sprite: { texture: drawText(art.t, 45, true) } }
+    // Заголовок (большой блок)
+    const title = Bodies.rectangle(window.innerWidth/2, 100, 700, 80, {
+        render: { sprite: { texture: drawCanvas(art.t, 50, true) } }
     });
     Composite.add(engine.world, title);
 
-    const parts
+    // Куски текста (средние блоки)
+    const words = art.c.split(' ');
+    words.forEach((word, i) => {
+        setTimeout(() => {
+            const b = Bodies.rectangle(Math.random()*window.innerWidth, -100, 200, 50, {
+                render: { sprite: { texture: drawCanvas(word, 24, false) } }
+            });
+            Composite.add(engine.world, b);
+        }, i * 150);
+    });
+
+    Render.run(render);
+    runner = Runner.create();
+    Runner.run(runner, engine);
+}
+
+function drawCanvas(txt, size, isBold) {
+    const can = document.createElement('canvas');
+    const ctx = can.getContext('2d');
+    can.width = 750; can.height = 100;
+    ctx.font = `${isBold ? 'bold' : ''} ${size}px Courier New`;
+    ctx.fillStyle = "#000";
+    ctx.fillText(txt, 20, 60);
+    return can.toDataURL();
+}
+
+window.addEventListener('mousedown', () => {
+    clicks++;
+    if(clicks > 12) document.getElementById('error-screen').style.display = 'block';
+});
+
+function reconstruct() {
+    clicks = 0;
+    const err = document.getElementById('err-text');
+    err.style.transition = "transform 0.4s ease-in, opacity 0.4s";
+    err.style.transform = "scale(2) rotate(10deg)";
+    err.style.opacity = "0";
+    
+    setTimeout(() => {
+        err.style.transform = "scale(1) rotate(0deg)";
+        err.style.opacity = "1";
+        init();
+    }, 400);
+}
+
+init();
+</script>
+</body>
+</html>
