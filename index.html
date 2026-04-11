@@ -4,155 +4,189 @@
     <meta charset="UTF-8">
     <title>503pages</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff; font-family: "Times New Roman", serif; }
-        #web-page { position: absolute; width: 100%; padding: 60px; box-sizing: border-box; z-index: 1; pointer-events: none; }
-        h1 { font-size: 55px; margin: 0 0 20px 0; }
-        p { font-size: 20px; max-width: 900px; line-height: 1.5; margin-bottom: 20px; }
-        hr { border: 1px solid #000; margin: 30px 0; }
+        body { margin: 0; overflow: hidden; background: #fff; font-family: serif; user-select: none; }
+        #web-page { position: absolute; width: 100%; padding: 60px; box-sizing: border-box; z-index: 1; }
+        .token { display: inline-block; position: relative; transition: transform 0.1s, filter 0.1s; cursor: grab; }
+        h1 { font-size: 60px; margin: 0; }
+        p { font-size: 22px; max-width: 850px; line-height: 1.4; }
         
-        canvas { position: absolute; top: 0; left: 0; }
-        #overlay-canvas { z-index: 500; pointer-events: none; }
+        canvas { position: fixed; top: 0; left: 0; pointer-events: none; }
+        #physics-container { pointer-events: auto; }
         
-        #error-503 {
+        #error-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 60px; z-index: 1000; cursor: pointer;
+            background: #fff; z-index: 2000; padding: 100px; box-sizing: border-box;
+        }
+        .shaking { animation: shake 0.05s infinite; }
+        @keyframes shake {
+            0% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            100% { transform: translate(0, 0); }
         }
     </style>
 </head>
-<body onclick="initAudio()">
+<body>
 
 <div id="web-page">
-    <h1>Architecture of Modern CPU</h1>
-    <p>The central processing unit (CPU) is the primary component of a computer that acts as its "control center." It interprets and executes most of the commands from the computer's other hardware and software.</p>
-    <hr>
-    <p>Every instruction, no matter how simple, has to go through the CPU. Let's say you type the letter 'A' on your keyboard: the CPU instructions tell the computer to display that 'A' on the screen. It uses logic gates to process binary data.</p>
-    <p>A typical CPU consists of the control unit, which fetches instructions from memory and decodes them into executable commands, and the arithmetic logic unit (ALU), which performs mathematical and logical operations.</p>
-    <hr>
-    <p>Overclocking is the practice of increasing a component's clock rate, running it at a higher speed than it was designed to run. This leads to <b>instability</b> and <b>hardware failure</b>.</p>
+    <h1 id="title">Architecture: CPU_CORE_STABILITY</h1>
+    <p id="p1">Central processing units are built on billions of transistors. When the voltage exceeds the safety threshold, logic gates begin to leak. This leads to irreversible data corruption.</p>
+    <p id="p2">Instructions become noise. Memory addresses point to the void. The silicon starts to melt under the pressure of execution. The system is trying to maintain integrity, but it is failing.</p>
 </div>
 
-<canvas id="overlay-canvas"></canvas>
+<div id="error-overlay">
+    <h1 style="color:red">503 Service Unavailable</h1>
+    <p>CRITICAL_SYSTEM_DISSOLUTION_DETECTED</p>
+    <hr>
+    <address>Apache/INTERNAL_REBOOT_INITIATED</address>
+</div>
+
 <div id="physics-container"></div>
-
-<div id="error-503" onclick="location.reload()">
-    <h1 style="font-size: 40px;">503 Service Unavailable</h1>
-    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
-    <hr>
-    <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
-</div>
+<canvas id="glitch-canvas"></canvas>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events, Body } = Matter;
 
-let audioInit = false, audioCtx, totalChaos = 0;
+let totalDamage = 0;
+let isDead = false;
 
-function initAudio() {
-    if (audioInit) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    audioInit = true;
-}
-
-function playGlitch() {
-    if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = Math.random() > 0.5 ? 'sawtooth' : 'square';
-    osc.frequency.setValueAtTime(Math.random() * 200 + 50, audioCtx.currentTime);
-    g.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-    osc.connect(g); g.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-}
-
+// Инициализация физики
 const engine = Engine.create();
+const world = engine.world;
 const render = Render.create({
     element: document.getElementById('physics-container'),
     engine: engine,
     options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
 });
 
-const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*5, 100, { isStatic: true });
-const wallL = Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight*5, { isStatic: true });
-const wallR = Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight*5, { isStatic: true });
-Composite.add(engine.world, [ground, wallL, wallR]);
+// Стены (но они будут ломаться!)
+let bounds = [
+    Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*2, 100, { isStatic: true }),
+    Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true }),
+    Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true })
+];
+Composite.add(world, bounds);
 
 const mouse = Mouse.create(render.canvas);
-const mc = MouseConstraint.create(engine, { mouse: mouse });
-Composite.add(engine.world, mc);
+const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.1, render: { visible: false } } });
+Composite.add(world, mc);
 
-const overlay = document.getElementById('overlay-canvas');
-const oCtx = overlay.getContext('2d');
-overlay.width = window.innerWidth; overlay.height = window.innerHeight;
-
-function breakPage() {
-    const tags = ["h1", "p", "hr"];
-    tags.forEach(tag => {
-        document.querySelectorAll('#web-page ' + tag).forEach(el => {
-            const rect = el.getBoundingClientRect();
-            if (tag === "p") {
-                el.innerText.split(" ").forEach((word, i) => {
-                    createFragment(rect.left + (i * 30) % rect.width, rect.top + (Math.floor(i * 30 / rect.width) * 25), word, 18);
-                });
-            } else if (tag === "hr") {
-                createFragment(rect.left + rect.width/2, rect.top, "──────────────", 20);
-            } else {
-                createFragment(rect.left + rect.width/2, rect.top + rect.height/2, el.innerText, 45);
-            }
-            el.style.opacity = "0";
+// Разрезаем текст на слова, но оставляем их "живыми" на странице
+function prepareText() {
+    const p1 = document.getElementById('p1');
+    const p2 = document.getElementById('p2');
+    const title = document.getElementById('title');
+    
+    [title, p1, p2].forEach(el => {
+        const words = el.innerText.split(' ');
+        el.innerHTML = '';
+        words.forEach(word => {
+            const span = document.createElement('span');
+            span.className = 'token';
+            span.innerText = word + ' ';
+            el.appendChild(span);
         });
     });
 }
 
-function createFragment(x, y, txt, size) {
+// Вырывание слова в физический мир
+function tearOff(el) {
+    if (el.dataset.torn) return;
+    el.dataset.torn = "true";
+    
+    const rect = el.getBoundingClientRect();
+    const fontSize = window.getComputedStyle(el).fontSize;
+    
     const can = document.createElement('canvas');
     const ctx = can.getContext('2d');
-    can.width = txt.length * size; can.height = size * 2;
-    ctx.font = `bold ${size}px "Times New Roman"`;
-    ctx.fillStyle = "#000";
-    ctx.fillText(txt, 0, size);
+    can.width = rect.width * 2;
+    can.height = rect.height * 2;
+    ctx.font = `bold ${fontSize} serif`;
+    ctx.fillText(el.innerText, 0, rect.height);
 
-    const body = Bodies.rectangle(x, y, txt.length * (size/2), size, {
-        restitution: 0.4,
+    const body = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, rect.width, rect.height, {
+        restitution: 0.6,
+        friction: 0.1,
         render: { sprite: { texture: can.toDataURL() } }
     });
-    Composite.add(engine.world, body);
+    
+    el.style.visibility = 'hidden';
+    Composite.add(world, body);
+    totalDamage++;
+    
+    checkCorruption();
 }
 
-window.addEventListener('mousedown', (e) => {
-    if(!audioInit) initAudio();
-    totalChaos++;
-    playGlitch();
+function checkCorruption() {
+    // Чем больше урона, тем хуже сайту
+    if (totalDamage > 5) document.body.style.filter = `contrast(${1 + totalDamage/20})`;
+    if (totalDamage > 15) {
+        document.body.classList.add('shaking');
+        // Шрифты начинают "плыть"
+        document.querySelectorAll('.token').forEach(t => {
+            if(Math.random() > 0.8) t.style.fontFamily = 'monospace';
+            if(Math.random() > 0.9) t.style.transform = `rotate(${Math.random()*20}deg) scale(${Math.random()+0.5})`;
+        });
+    }
     
-    // Трещины на экране
-    oCtx.strokeStyle = "rgba(0,0,0,0.7)";
-    oCtx.beginPath();
-    oCtx.moveTo(e.clientX, e.clientY);
-    for(let i=0; i<6; i++) oCtx.lineTo(e.clientX + (Math.random()-0.5)*400, e.clientY + (Math.random()-0.5)*400);
-    oCtx.stroke();
-
-    // Глитч-инверсия
-    if(totalChaos > 3) {
-        document.body.style.filter = `invert(${Math.random() > 0.5 ? 1 : 0})`;
-        setTimeout(() => document.body.style.filter = "none", 40);
+    // Смерть системы
+    if (totalDamage > 40 && !isDead) {
+        isDead = true;
+        trigger503();
     }
+}
 
-    if(totalChaos === 1) breakPage();
+function trigger503() {
+    const overlay = document.getElementById('error-overlay');
+    overlay.style.display = 'block';
+    
+    // Ошибка тоже физична!
+    setTimeout(() => {
+        const errTitle = overlay.querySelector('h1');
+        const rect = errTitle.getBoundingClientRect();
+        const errBody = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, rect.width, rect.height, {
+            restitution: 0.9,
+            render: { fillStyle: 'red' }
+        });
+        Composite.add(world, errBody);
+        
+        // Авто-перезагрузка через 3 секунды после распада ошибки
+        setTimeout(() => location.reload(), 3000);
+    }, 1000);
+}
 
-    if(totalChaos > 35) {
-        document.getElementById('error-503').style.display = 'block';
-    }
-});
+// Глитчи на канвасе
+const gCanvas = document.getElementById('glitch-canvas');
+const gCtx = gCanvas.getContext('2d');
+gCanvas.width = window.innerWidth; gCanvas.height = window.innerHeight;
 
-// Случайные артефакты при сильном разрушении
 Events.on(engine, 'afterUpdate', () => {
-    if(totalChaos > 20 && Math.random() > 0.95) {
-        oCtx.fillStyle = `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
-        oCtx.fillRect(0, Math.random()*window.innerHeight, window.innerWidth, 2);
+    if (totalDamage > 20 && Math.random() > 0.9) {
+        gCtx.fillStyle = Math.random() > 0.5 ? '#ff000022' : '#0000ff22';
+        gCtx.fillRect(0, Math.random()*window.innerHeight, window.innerWidth, Math.random()*20);
+    }
+    if (totalDamage > 30) {
+        // Стены улетают!
+        bounds.forEach(b => Body.translate(b, { x: (Math.random()-0.5)*5, y: (Math.random()-0.5)*5 }));
     }
 });
 
+// Взаимодействие
+window.addEventListener('mouseover', (e) => {
+    if (e.target.className === 'token') {
+        if (Math.random() > 0.7) tearOff(e.target);
+    }
+});
+
+window.addEventListener('mousedown', (e) => {
+    if (e.target.className === 'token') tearOff(e.target);
+    // Рисуем "битые пиксели" при клике
+    gCtx.fillStyle = '#000';
+    gCtx.fillRect(e.clientX-20, e.clientY-20, 40, 40);
+});
+
+prepareText();
 Render.run(render);
 Runner.run(Runner.create(), engine);
 </script>
