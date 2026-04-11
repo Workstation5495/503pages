@@ -1,32 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>503 Service Unavailable</title>
     <style>
-        body { margin: 0; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; min-height: 400vh; overflow-x: hidden; }
+        body { margin: 0; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; min-height: 420vh; overflow-x: hidden; }
         
         #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 5; background: #fff; }
-        h1 { font-size: 48px; font-weight: 800; border-bottom: 4px solid #1a1a1a; padding-bottom: 15px; margin-bottom: 40px; }
-        h2 { font-size: 26px; margin-top: 60px; color: #000; text-transform: uppercase; letter-spacing: 1px; }
+        h1 { font-size: 48px; font-weight: 800; border-bottom: 4px solid #000; padding-bottom: 15px; margin-bottom: 40px; }
+        h2 { font-size: 26px; margin-top: 60px; color: #000; text-transform: uppercase; border-left: 8px solid #000; padding-left: 15px; }
         p { font-size: 20px; line-height: 1.8; max-width: 1000px; margin-bottom: 30px; text-align: justify; }
         
-        #physics-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        /* Физика теперь на всю высоту документа */
+        #physics-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         
-        .artifact-line { position: fixed; left: 0; width: 100%; height: 1px; z-index: 1000; pointer-events: none; background: #000; opacity: 0.3; }
+        .artifact-line { position: fixed; left: 0; width: 100%; height: 1px; z-index: 1000; pointer-events: none; background: #000; }
         .code-drop { position: fixed; font-family: monospace; font-size: 13px; color: #000; z-index: 900; pointer-events: none; }
 
-        .chaos-mode { animation: glitch-anim 0.1s infinite; }
-        @keyframes glitch-anim {
-            0% { filter: invert(0); transform: translateX(0); }
-            20% { filter: invert(1); transform: translateX(2px); }
-            40% { filter: invert(0); transform: translateX(-2px); }
-            100% { transform: translateX(0); }
+        .chaos-mode { animation: glitch 0.12s infinite; }
+        @keyframes glitch {
+            0% { filter: invert(0); }
+            50% { filter: invert(1); }
+            100% { filter: invert(0); }
         }
 
-        span.char { display: inline-block; position: relative; }
-        span.char.letter { margin-right: 2px; }
-        span.char.space  { margin-right: 10px; }
+        span.char { display: inline-block; white-space: pre; }
+        span.char.letter { position: relative; }
     </style>
 </head>
 <body>
@@ -57,95 +56,89 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Body } = Matter;
 
 const engine = Engine.create();
 const world = engine.world;
-engine.gravity.y = 1.2;
+engine.gravity.y = 1;
+
+// Определяем размеры всей страницы
+const docHeight = document.documentElement.scrollHeight;
+const docWidth = document.documentElement.scrollWidth;
 
 const render = Render.create({
     element: document.getElementById('physics-container'),
     engine: engine,
     options: { 
-        width: window.innerWidth, 
-        height: window.innerHeight, 
+        width: docWidth, 
+        height: docHeight, 
         wireframes: false, 
         background: 'transparent' 
     }
 });
 
-// Пол и стенки (фиксированные на экране)
-const floor = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 25, window.innerWidth, 50, { isStatic: true });
-const leftWall = Bodies.rectangle(-25, window.innerHeight/2, 50, window.innerHeight, { isStatic: true });
-const rightWall = Bodies.rectangle(window.innerWidth + 25, window.innerHeight/2, 50, window.innerHeight, { isStatic: true });
+// Пол в самом низу страницы и стенки
+const floor = Bodies.rectangle(docWidth/2, docHeight + 50, docWidth, 100, { isStatic: true });
+const leftWall = Bodies.rectangle(-25, docHeight/2, 50, docHeight, { isStatic: true });
+const rightWall = Bodies.rectangle(docWidth + 25, docHeight/2, 50, docHeight, { isStatic: true });
 Composite.add(world, [floor, leftWall, rightWall]);
 
 let damage = 0;
 let isDead = false;
 
-// Подготовка текста
+// Разбиваем текст (сохраняем пробелы)
 document.querySelectorAll('.data, h1, h2').forEach(el => {
     const text = el.innerText;
     el.innerHTML = '';
-    text.split('').forEach(char => {
+    [...text].forEach(char => {
         const span = document.createElement('span');
         span.innerText = char;
-        span.className = char === ' ' ? 'char space' : 'char letter';
+        span.className = 'char letter';
         el.appendChild(span);
     });
 });
-
-function spawnCode() {
-    if (isDead) return;
-    const codes = ["0x000000F4", "0x0000007A", "503_RETRY", "NULL_PTR", "EIP_RECURSE"];
-    const div = document.createElement('div');
-    div.className = 'code-drop';
-    div.innerText = codes[Math.floor(Math.random()*codes.length)];
-    div.style.left = Math.random() * 100 + '%';
-    div.style.top = '-20px';
-    document.body.appendChild(div);
-    
-    let pos = -20;
-    const interval = setInterval(() => {
-        pos += 8;
-        div.style.top = pos + 'px';
-        if (pos > window.innerHeight) { clearInterval(interval); div.remove(); }
-    }, 20);
-}
 
 function spawnArtifact() {
     if (isDead) return;
     const line = document.createElement('div');
     line.className = 'artifact-line';
-    line.style.top = Math.random() * 100 + '%';
+    line.style.top = Math.random() * 100 + 'vh';
     document.body.appendChild(line);
-    setTimeout(() => line.remove(), 30);
+    setTimeout(() => line.remove(), 40);
 }
 
 function breakChar(span, explosion = false) {
-    if (span.dataset.gone || isDead || !span.classList.contains('letter')) return;
+    if (span.dataset.gone || isDead || span.innerText.trim() === "") return;
     span.dataset.gone = "true";
 
+    // Получаем координаты относительно документа (с учетом скролла)
     const rect = span.getBoundingClientRect();
-    const style = window.getComputedStyle(span);
+    const scrollX = window.pageXOffset;
+    const scrollY = window.pageYOffset;
 
+    const style = window.getComputedStyle(span);
     const cvs = document.createElement('canvas');
     cvs.width = 40; cvs.height = 40;
     const ctx = cvs.getContext('2d');
     ctx.fillStyle = "#000";
-    ctx.font = `${style.fontWeight} 19px ${style.fontFamily}`;
+    ctx.font = `${style.fontWeight} 20px ${style.fontFamily}`;
     ctx.fillText(span.innerText, 5, 25);
 
-    const body = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, 16, 16, {
-        restitution: 0.4,
-        friction: 0.1,
-        render: { sprite: { texture: cvs.toDataURL() } }
-    });
+    const body = Bodies.rectangle(
+        rect.left + scrollX + rect.width/2, 
+        rect.top + scrollY + rect.height/2, 
+        16, 16, 
+        {
+            restitution: 0.3,
+            friction: 0.05,
+            render: { sprite: { texture: cvs.toDataURL() } }
+        }
+    );
 
     if (explosion) {
         Body.applyForce(body, body.position, {
-            x: (Math.random() - 0.5) * 0.1,
-            y: (Math.random() - 0.5) * 0.1
+            x: (Math.random() - 0.5) * 0.05,
+            y: (Math.random() - 0.5) * 0.05
         });
     }
 
@@ -153,61 +146,57 @@ function breakChar(span, explosion = false) {
     Composite.add(world, body);
     damage++;
 
-    if (damage % 12 === 0) spawnArtifact();
-    if (damage % 25 === 0) spawnCode();
-    if (damage > 400) document.body.classList.add('chaos-mode');
+    if (damage % 15 === 0) spawnArtifact();
+    if (damage > 300) document.body.classList.add('chaos-mode');
 
-    if (damage > 1200 && !isDead) {
+    // Финальная ошибка 503
+    if (damage > 1000 && !isDead) {
         isDead = true;
+        window.scrollTo(0, 0);
+        document.body.style.minHeight = "100vh";
         document.body.innerHTML = `
-            <div style="background:#fff; height:100vh; padding:50px; font-family:Arial; color:#000;">
-                <h1 style="font-weight:normal; border-bottom:1px solid #ccc; padding-bottom:10px;">503 Service Unavailable</h1>
-                <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
+            <div style="background:#fff; height:100vh; padding:50px; font-family:Arial; color:#000; box-sizing:border-box;">
+                <h1 style="font-weight:normal; border-bottom:1px solid #ccc; padding-bottom:10px; font-size: 32px;">503 Service Unavailable</h1>
+                <p style="font-size: 16px;">The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
                 <hr>
-                <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
+                <address style="font-style: normal;">Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
             </div>
         `;
         document.body.className = '';
-        Render.stop(render);
-        Runner.stop(runner);
     }
 }
 
-// Эффект прыжка букв при скролле
-let lastScroll = window.scrollY;
-window.addEventListener('scroll', () => {
-    let delta = window.scrollY - lastScroll;
-    lastScroll = window.scrollY;
-    
-    Composite.allBodies(world).forEach(b => {
-        if (!b.isStatic) {
-            Body.applyForce(b, b.position, { x: 0, y: -delta * 0.0002 });
-        }
-    });
-});
-
+// Ломаем при наведении (учитываем скролл)
 window.addEventListener('mousemove', (e) => {
     const el = document.elementFromPoint(e.clientX, e.clientY);
     if (el && el.classList.contains('char')) breakChar(el);
 });
 
+// Взрыв при клике
 window.addEventListener('mousedown', (e) => {
-    document.querySelectorAll('.char.letter:not([data-gone])').forEach(char => {
-        const rect = char.getBoundingClientRect();
-        const dist = Math.hypot(rect.left - e.clientX, rect.top - e.clientY);
-        if (dist < 150) breakChar(char, true);
-    });
-});
+    const scrollX = window.pageXOffset;
+    const scrollY = window.pageYOffset;
+    const mouseX = e.clientX + scrollX;
+    const mouseY = e.clientY + scrollY;
 
-window.addEventListener('resize', () => {
-    render.canvas.width = window.innerWidth;
-    render.canvas.height = window.innerHeight;
-    Body.setPosition(floor, { x: window.innerWidth/2, y: window.innerHeight + 25 });
+    document.querySelectorAll('.char:not([data-gone])').forEach(char => {
+        const rect = char.getBoundingClientRect();
+        const charX = rect.left + scrollX;
+        const charY = rect.top + scrollY;
+        const dist = Math.hypot(charX - mouseX, charY - mouseY);
+        if (dist < 120) breakChar(char, true);
+    });
 });
 
 const runner = Runner.create();
 Render.run(render);
 Runner.run(runner, engine);
+
+// Фикс ресайза
+window.addEventListener('resize', () => {
+    render.canvas.width = document.documentElement.scrollWidth;
+    render.canvas.height = document.documentElement.scrollHeight;
+});
 </script>
 </body>
 </html>
