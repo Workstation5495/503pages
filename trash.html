@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>30_STATIONS_STOCHASTIC_SYSTEM</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+        #system-log { position: absolute; top: 10px; left: 10px; color: #0f0; font-size: 11px; z-index: 10; background: rgba(0,0,0,0.8); padding: 5px; border: 1px solid #0f0; }
+        
+        #error-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; color: #000; padding: 50px; z-index: 1000;
+        }
+        #error-content { font-family: "Times New Roman", serif; }
+
+        #final-msg {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #fff; font-size: 50px; font-weight: bold; text-align: center; z-index: 2000;
+            letter-spacing: 12px; filter: blur(0.5px); text-shadow: 0 0 15px #00f;
+        }
+    </style>
+</head>
+<body>
+
+<div id="system-log">
+    [SYSTEM_INIT]... OK<br>
+    [POOL_SIZE]: 30 ARTICLES<br>
+    [SESSION_PICK]: <span id="active-id">SELECTING...</span><br>
+    [TOPIC]: <span id="topic">CONNECTING...</span>
+</div>
+
+<div id="error-screen">
+    <div id="error-content">
+        <h1 style="font-size: 32px; border-bottom: 1px solid #000;">503 Service Unavailable</h1>
+        <p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>
+        <p>User interaction limit exceeded. Memory dump initiated.</p>
+        <hr>
+        <address>Web-Server/2.0.1 (Experimental) Port 80</address>
+    </div>
+</div>
+
+<div id="final-msg">ALWAYS IN TOUCH</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+<script>
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
+const engine = Engine.create();
+const render = Render.create({
+    element: document.body,
+    engine: engine,
+    options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
+});
+
+const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 50, window.innerWidth, 100, { isStatic: true });
+Composite.add(engine.world, ground);
+
+async function runSession() {
+    try {
+        // 1. Генерируем "пул" из 30 случайных ID/статей
+        const res = await fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=30&origin=*');
+        const data = await res.json();
+        const pool = data.query.random;
+
+        // 2. Выбираем РАНДОМНО ОДНУ из этих 30
+        const randomIndex = Math.floor(Math.random() * 30);
+        const selected = pool[randomIndex];
+        
+        document.getElementById('active-id').innerText = `ID_${randomIndex + 1}_OF_30`;
+        document.getElementById('topic').innerText = selected.title.toUpperCase();
+
+        // 3. Загружаем текст ИМЕННО ЭТОЙ статьи
+        const contentRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(selected.title)}&format=json&origin=*`);
+        const contentData = await contentRes.json();
+        const pages = contentData.query.pages;
+        const pageId = Object.keys(pages)[0];
+        const text = pages[pageId].extract || "DATA_STREAM_EMPTY";
+
+        // 4. Дробим её на 30 физических кусков
+        const lines = text.split('. ').slice(0, 30);
+        lines.forEach((line, i) => {
+            if(line.length < 5) return;
+            setTimeout(() => {
+                const box = Bodies.rectangle(
+                    Math.random() * window.innerWidth, -100,
+                    Math.min(line.length * 8, 400), 35, {
+                    render: { sprite: { texture: makeLabel(line.substring(0, 45)) } }
+                });
+                Composite.add(engine.world, box);
+            }, i * 250);
+        });
+
+    } catch (e) { console.error("FATAL_ERROR: CONNECTION_REJECTED"); }
+}
+
+function makeLabel(str) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 450; canvas.height = 40;
+    ctx.fillStyle = '#111'; ctx.fillRect(0,0,450,40);
+    ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2; ctx.strokeRect(0,0,450,40);
+    ctx.fillStyle = '#0f0'; ctx.font = '13px Courier New';
+    ctx.fillText(str.toUpperCase(), 15, 25);
+    return canvas.toDataURL();
+}
+
+const mouse = Mouse.create(render.canvas);
+const mouseConstraint = MouseConstraint.create(engine, { mouse: mouse });
+Composite.add(engine.world, mouseConstraint);
+
+let clicks = 0;
+window.addEventListener('mousedown', () => {
+    clicks++;
+    if(clicks > 12) crashSystem();
+});
+
+function crashSystem() {
+    document.getElementById('error-screen').style.display = 'block';
+    setTimeout(() => {
+        const err = document.getElementById('error-content');
+        err.style.transition = 'all 2.5s ease-in';
+        err.style.transform = 'translateY(120vh) rotate(-10deg) scale(0.5)';
+        setTimeout(() => {
+            document.getElementById('error-screen').style.background = '#000';
+            document.getElementById('final-msg').style.display = 'block';
+        }, 2200);
+    }, 3500);
+}
+
+Render.run(render);
+Runner.run(Runner.create(), engine);
+runSession();
+</script>
+</body>
+</html>
