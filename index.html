@@ -1,81 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>503pages</title>
+    <title>Silicon Decay OS</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; }
-        #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 5; background: #fff; }
-        h1 { font-size: 48px; font-weight: 800; border-bottom: 4px solid #000; padding-bottom: 15px; margin-bottom: 40px; }
-        h2 { font-size: 26px; margin-top: 50px; color: #000; text-transform: uppercase; letter-spacing: 1px; }
-        p { font-size: 19px; line-height: 1.8; max-width: 1000px; margin-bottom: 30px; text-align: justify; }
+        :root { --bg: #f4f4f4; --text: #1a1a1a; }
+        body { 
+            margin: 0; background: var(--bg); font-family: "Segoe UI", Tahoma, sans-serif; 
+            color: var(--text); overflow-x: hidden; min-height: 200vh;
+        }
         
-        .artifact-line { position: fixed; left: 0; width: 100%; height: 2px; z-index: 1000; pointer-events: none; }
-        .code-drop { position: fixed; font-family: monospace; font-size: 12px; color: #000; z-index: 900; pointer-events: none; white-space: nowrap; }
- 
-        #error-screen {
+        /* Слой статьи */
+        #article-layer { 
+            position: relative; width: 100%; padding: 100px 10%; box-sizing: border-box; 
+            z-index: 5; pointer-events: none; 
+        }
+        h1 { font-size: clamp(32px, 5vw, 64px); border-left: 8px solid #000; padding-left: 20px; margin-bottom: 60px; }
+        h2 { font-size: 24px; margin-top: 40px; opacity: 0.8; }
+        p { font-size: 20px; line-height: 1.6; max-width: 800px; text-align: justify; }
+
+        /* Контейнер для физики */
+        #physics-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+
+        /* Эффекты */
+        .char { display: inline-block; pointer-events: auto; transition: transform 0.1s; position: relative; }
+        .char:hover { color: #ff0000; text-shadow: 2px 2px 0px #00ffff; }
+        
+        .glitch-flash { animation: flash 0.2s steps(2); }
+        @keyframes flash {
+            0% { opacity: 1; filter: invert(0); }
+            50% { opacity: 0.5; filter: invert(1) scale(1.2); }
+            100% { opacity: 1; filter: invert(0); }
+        }
+
+        .chaos-mode { animation: shake 0.1s infinite; filter: contrast(150%) sepia(20%); }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+        }
+
+        /* Ошибка */
+        #error-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 50px; z-index: 1000000; font-family: "Arial", sans-serif;
+            background: #fff; color: #000; z-index: 99999; padding: 10%; font-family: monospace;
         }
-        #error-screen h1 { font-size: 32px; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; font-weight: normal; }
-        #error-screen p { font-size: 16px; color: #333; }
-        
-        canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 100; }
-        
-        .chaos-mode { animation: screen-shake 0.05s infinite; filter: contrast(200%) brightness(150%); }
-        @keyframes screen-shake {
-            0% { transform: translate(4px, -4px); filter: invert(1); }
-            50% { transform: translate(-4px, 4px); filter: hue-rotate(180deg); }
-            100% { transform: translate(2px, 2px); }
-        }
- 
-        span.char { display: inline-block; }
-        span.char.letter { margin-right: 4px; }
-        span.char.space  { margin-right: 10px; }
     </style>
 </head>
 <body>
- 
+
 <div id="article-layer">
     <h1>Advanced Microarchitecture: Beyond the Silicon Limit</h1>
-    <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node and below, quantum tunneling becomes the dominant factor in gate leakage. This occurs when electrons bypass the insulating layer of a transistor, leading to non-deterministic states and massive thermal dissipation that threatens structural integrity.</p>
+    <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node and below, quantum tunneling becomes the dominant factor in gate leakage. This occurs when electrons bypass the insulating layer of a transistor, leading to non-deterministic states.</p>
     
     <h2>1. The Nanoscale Interconnect Dilemma</h2>
-    <p class="data">As density increases, the copper interconnects that carry data across the die are becoming so thin that electromigration—the physical movement of atoms caused by current flow—starts to degrade the wires. To combat this, industry leaders are exploring graphene-doped substrates and backside power delivery systems (BSPDN). Without these, the latency between cache hits would grow exponentially, rendering multi-core systems inefficient.</p>
+    <p class="data">As density increases, the copper interconnects that carry data across the die are becoming so thin that electromigration—the physical movement of atoms caused by current flow—starts to degrade the wires. industry leaders are exploring graphene-doped substrates and backside power delivery systems (BSPDN).</p>
     
-    <h2>2. Predictive Speculation and Logic Decay</h2>
-    <p class="data">Modern CPUs rely on complex branch prediction algorithms. However, when a CPU is pushed to its voltage limit, the probability of bit-flips in the register file increases. This results in speculative execution paths that lead into "logic voids." Once the processor enters these unmapped instruction spaces, the instruction pointer (EIP) begins to loop recursively, causing the silicon to overheat at the gate level.</p>
-    
-    <h2>3. Thermal Throttling and Die Dissolution</h2>
-    <p class="data">At temperatures exceeding 105°C, the chemical bonds within the packaging substrate begin to weaken. Thermal throttling can only slow down the process; it cannot stop a full-scale ionic migration if the cooling loop fails. Once the logic gates lose their threshold voltage, the chip enters a state of permanent hardware exception, often referred to as "silicon death."</p>
- 
-    <h2>4. The Future of Photonic Compute</h2>
-    <p class="data">Moving from electrons to photons for on-chip communication is the only way to bypass the current thermal wall. Photonic interconnects would allow for near-zero latency and zero heat generation from data transfer. However, integrating lasers directly onto silicon wafers remains a manufacturing nightmare, as any slight misalignment leads to immediate signal loss and total system halt.</p>
+    <h2>2. Logic Decay & Speculative Execution</h2>
+    <p class="data">Modern CPUs rely on complex branch prediction algorithms. However, when a CPU is pushed to its voltage limit, the probability of bit-flips increases. This results in speculative execution paths that lead into "logic voids." Once the processor enters these unmapped spaces, the instruction pointer (EIP) begins to loop recursively.</p>
 </div>
- 
+
 <div id="physics-container"></div>
- 
+<div id="error-overlay">
+    <h1>CRITICAL_PROCESS_DIED</h1>
+    <p>A problem has been detected and the system has been shut down to prevent damage to your hardware.</p>
+    <p>ERROR_CODE: 0x00000050 (PAGE_FAULT_IN_NONPAGED_AREA)</p>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
- 
+
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Body } = Matter;
- 
+const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
+
+// --- Инициализация движка ---
 const engine = Engine.create();
 const world = engine.world;
+engine.gravity.y = 1.2;
+
 const render = Render.create({
     element: document.getElementById('physics-container'),
     engine: engine,
-    options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
+    options: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        wireframes: false,
+        background: 'transparent'
+    }
 });
- 
-const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*2, 100, { isStatic: true });
-Composite.add(world, [ground]);
- 
+
+// Стенки, чтобы буквы не улетали
+const walls = [
+    Bodies.rectangle(window.innerWidth/2, window.innerHeight + 50, window.innerWidth, 100, { isStatic: true }),
+    Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, { isStatic: true }),
+    Bodies.rectangle(window.innerWidth + 50, window.innerHeight/2, 100, window.innerHeight, { isStatic: true })
+];
+Composite.add(world, walls);
+
+// --- Подготовка текста ---
 let damage = 0;
-let isDead = false;
- 
-// Каждая буква → span.char.letter (margin-right: 4px = пробел между буквами)
-// Каждый пробел → span.char.space  (margin-right: 10px = пробел между словами)
+const maxDamage = 600;
+
 document.querySelectorAll('.data, h1, h2').forEach(el => {
     const text = el.innerText;
     el.innerHTML = '';
@@ -86,103 +109,108 @@ document.querySelectorAll('.data, h1, h2').forEach(el => {
         el.appendChild(span);
     });
 });
- 
-function spawnCode() {
-    if (isDead || damage < 200) return;
-    const codes = ["0x000000F4", "0x0000007A", "0x0000007B", "0x0000000A", "0x000000F7", "0xc000000f", "0x0000001E"];
-    const div = document.createElement('div');
-    div.className = 'code-drop';
-    div.innerText = codes[Math.floor(Math.random()*codes.length)];
-    div.style.left = Math.random() * 100 + '%';
-    div.style.top = '-20px';
-    document.body.appendChild(div);
-    let pos = -20;
-    const interval = setInterval(() => {
-        pos += 10;
-        div.style.top = pos + 'px';
-        if (pos > window.innerHeight) { clearInterval(interval); div.remove(); }
-    }, 30);
-}
- 
-function spawnArtifact() {
-    if (isDead) return;
-    const line = document.createElement('div');
-    line.className = 'artifact-line';
-    line.style.top = Math.random() * 100 + '%';
-    line.style.background = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.6)`;
-    document.body.appendChild(line);
-    setTimeout(() => line.remove(), 40);
-}
- 
-function breakChar(span, explosion = false) {
-    if (span.dataset.gone || isDead || !span.classList.contains('letter')) return;
+
+// --- Логика разрушения ---
+function breakChar(span, force = 1) {
+    if (span.dataset.gone || span.classList.contains('space')) return;
+    
+    // Сначала "глючим"
+    if (!span.dataset.cracked) {
+        span.dataset.cracked = "1";
+        span.classList.add('glitch-flash');
+        span.style.transform = `translate(${(Math.random()-0.5)*10}px, ${(Math.random()-0.5)*10}px) rotate(${(Math.random()-0.5)*20}deg)`;
+        damage += 0.5;
+        return;
+    }
+
+    // Потом отрываем
     span.dataset.gone = "true";
- 
     const rect = span.getBoundingClientRect();
     const style = window.getComputedStyle(span);
- 
-    const cvs = document.createElement('canvas');
-    cvs.width = 40; cvs.height = 40;
-    const ctx = cvs.getContext('2d');
+
+    // Рисуем букву на текстуру
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
     ctx.fillStyle = style.color;
-    ctx.font = `bold 18px ${style.fontFamily}`;
-    ctx.fillText(span.innerText, 0, 30);
- 
-    const body = Bodies.rectangle(rect.left, rect.top, 15, 15, {
-        restitution: 0.5,
-        render: { sprite: { texture: cvs.toDataURL() } }
+    ctx.font = `bold 24px ${style.fontFamily}`;
+    ctx.textAlign = 'center';
+    ctx.fillText(span.innerText, 32, 40);
+
+    const letterBody = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, 20, 20, {
+        restitution: 0.4,
+        friction: 0.1,
+        render: { sprite: { texture: canvas.toDataURL(), xScale: 1, yScale: 1 } }
     });
- 
-    if (explosion) {
-        Body.applyForce(body, body.position, {
-            x: (Math.random() - 0.5) * 0.05,
-            y: (Math.random() - 0.5) * 0.05
+
+    // Импульс при взрыве (клике)
+    if (force > 1) {
+        Body.applyForce(letterBody, letterBody.position, {
+            x: (Math.random() - 0.5) * 0.1 * force,
+            y: (Math.random() - 0.5) * 0.1 * force
         });
     }
- 
+
     span.style.visibility = 'hidden';
-    Composite.add(world, body);
+    Composite.add(world, letterBody);
     damage++;
- 
-    if (damage % 5 === 0) spawnArtifact();
-    if (damage > 150) spawnCode();
+
+    // Визуальные стадии деградации
+    if (damage > 100) document.body.style.filter = `contrast(${100 + damage/5}%)`;
     if (damage > 300) document.body.classList.add('chaos-mode');
- 
-    if (damage > 800 && !isDead) {
-        isDead = true;
-        document.body.innerHTML = '';
-        const err = document.createElement('div');
-        err.style.cssText = 'display:block;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;color:#000;padding:50px;z-index:1000000;font-family:Arial,sans-serif;box-sizing:border-box;';
-        err.innerHTML = `
-            <h1 style="font-size:32px;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:20px;font-weight:normal;">503 Service Unavailable</h1>
-            <p style="font-size:16px;color:#333;">The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
-            <hr>
-            <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
-        `;
-        document.body.appendChild(err);
-        document.body.style.background = '#fff';
-        document.body.className = '';
-        Render.stop(render);
-        Runner.stop(runner);
+    
+    if (damage > maxDamage) {
+        document.getElementById('error-overlay').style.display = 'block';
     }
 }
- 
+
+// --- Обработка событий ---
+
+// Скролл смещает физические тела (эффект инерции)
+let lastScrollY = window.scrollY;
+window.addEventListener('scroll', () => {
+    const delta = window.scrollY - lastScrollY;
+    const allBodies = Composite.allBodies(world);
+    allBodies.forEach(body => {
+        if (!body.isStatic) {
+            Body.setPosition(body, { x: body.position.x, y: body.position.y - delta });
+        }
+    });
+    lastScrollY = window.scrollY;
+});
+
+// Разрушение при движении мыши
 window.addEventListener('mousemove', (e) => {
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (el && el.classList && el.classList.contains('char')) breakChar(el);
+    if (el && el.classList.contains('char')) {
+        breakChar(el, 0.5);
+    }
 });
- 
+
+// Взрыв при клике
 window.addEventListener('mousedown', (e) => {
-    document.querySelectorAll('.char.letter:not([data-gone])').forEach(char => {
+    const chars = document.querySelectorAll('.char.letter:not([data-gone])');
+    chars.forEach(char => {
         const rect = char.getBoundingClientRect();
         const dist = Math.hypot(rect.left - e.clientX, rect.top - e.clientY);
-        if (dist < 150) breakChar(char, true);
+        if (dist < 120) {
+            // Задержка для эффекта цепной реакции
+            setTimeout(() => breakChar(char, 2), dist / 2);
+        }
     });
 });
- 
+
+// Адаптивность при изменении окна
+window.addEventListener('resize', () => {
+    render.canvas.width = window.innerWidth;
+    render.canvas.height = window.innerHeight;
+    Body.setPosition(walls[0], { x: window.innerWidth/2, y: window.innerHeight + 50 });
+});
+
 const runner = Runner.create();
 Render.run(render);
 Runner.run(runner, engine);
+
 </script>
 </body>
 </html>
