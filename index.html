@@ -2,55 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Intel Core & AMD Ryzen: Architecture Analysis 2026</title>
+    <title>503pages</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff; font-family: "Segoe UI", Tahoma, sans-serif; color: #1a1a1a; user-select: none; transition: filter 0.05s; }
+        body { margin: 0; overflow: hidden; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; }
         #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 1; }
-        h1 { font-size: 42px; color: #000; border-bottom: 2px solid #eaeaea; padding-bottom: 20px; }
-        h2 { font-size: 24px; margin-top: 40px; color: #333; }
-        p { font-size: 17px; line-height: 1.8; max-width: 850px; text-align: left; color: #444; }
-        .meta { color: #888; font-size: 14px; margin-bottom: 30px; }
+        h1 { font-size: 42px; color: #000; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        p { font-size: 18px; line-height: 1.8; max-width: 850px; color: #333; }
         
-        /* Та самая 503 */
+        /* Полоски-артефакты */
+        #glitch-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+        .artifact { position: absolute; background: rgba(255,0,0,0.3); height: 2px; width: 100%; }
+
+        /* Та самая 503 — АБСОЛЮТНО СТАТИЧНАЯ */
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 60px; z-index: 100000; font-family: "Times New Roman", serif;
+            background: #fff; color: #000; padding: 60px; z-index: 1000000; font-family: "Times New Roman", serif;
+            pointer-events: all;
         }
-        #error-screen h1 { font-size: 36px; border-bottom: 1px solid #000; padding-bottom: 10px; width: fit-content; }
-        #error-screen p { color: #000; font-size: 18px; max-width: 600px; }
+        #error-screen h1 { font-size: 36px; border-bottom: 1px solid #000; width: fit-content; margin-bottom: 20px; }
         
         canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 50; }
-        .glitch-heavy { animation: shake 0.05s infinite; filter: invert(1) contrast(200%); }
+        
+        .shake-effect { animation: shake 0.05s infinite; }
         @keyframes shake {
-            0% { transform: translate(5px, 2px); }
-            50% { transform: translate(-5px, -2px); }
-            100% { transform: translate(2px, 5px); }
+            0% { transform: translate(3px, -3px); filter: hue-rotate(90deg); }
+            50% { transform: translate(-3px, 3px); filter: invert(1); }
+            100% { transform: translate(0, 0); }
         }
     </style>
 </head>
 <body>
 
+<div id="glitch-overlay"></div>
+
 <div id="article-layer">
-    <div class="meta">Published: April 11, 2026 | Technical Review</div>
-    <h1>The Evolution of Microarchitectures: Hybrid Cores and Photonic Buses</h1>
-    
-    <p class="data-text">The transition to 2nm process technology has introduced unprecedented challenges in thermal management and quantum tunneling. Modern processors are no longer simple logic units; they are complex ecosystems consisting of Performance-cores (P-cores) and Efficient-cores (E-cores).</p>
-    
-    <h2>Memory Controller Hub & Latency</h2>
-    <p class="data-text">Integrated memory controllers have drastically reduced data access times. However, as thread density increases, the silicon interconnects begin to experience "crosstalk" interference. This necessitates advanced shielding techniques within the substrate layers.</p>
-    
-    <h2>Branch Prediction & Speculative Execution</h2>
-    <p class="data-text">Artificial Intelligence is now being used to predict branch paths before the instruction is even decoded. While this boosts performance by 30%, it creates a vulnerability window where data can be leaked through side-channel attacks. Physical stability of the register file is crucial.</p>
-    
-    <h2>Thermal Throttling Thresholds</h2>
-    <p class="data-text">When a CPU hits 105°C, it enters a critical state. Clock cycles are skipped, voltage is dropped, and if the temperature continues to rise, the logic gates simply stop functioning, leading to a total system dissolution.</p>
+    <h1>Architecture Evolution: Sub-atomic Interconnects</h1>
+    <p class="data-text">Technical analysis of 2nm micro-architecture. In the current iteration of silicon design, electron tunneling has become the primary bottleneck. To counteract this, manufacturers are implementing liquid-state logic gates.</p>
+    <p class="data-text">The L3 cache is now distributed across the entire die surface, creating a "neural mesh" of data. Any physical disturbance in the substrate leads to a cascade of register failures.</p>
+    <p class="data-text">When the instruction pointer hits a corrupted address, the CPU enters a recursive loop of destruction. The hardware cannot recover from a logic-gate meltdown once the synchronization clock is lost.</p>
 </div>
 
 <div id="error-screen">
     <h1>503 Service Unavailable</h1>
     <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
-    <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
-    <address>Apache/2.4.52 (Ubuntu) Server at internal-host-80.local Port 80</address>
+    <hr>
+    <address>Apache/2.4.52 (Ubuntu) Server at 127.0.0.1 Port 80</address>
+    <p style="margin-top: 40px; color: #666; font-size: 14px;">[ REBOOT REQUIRED ]</p>
 </div>
 
 <div id="physics-container"></div>
@@ -58,7 +55,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events } = Matter;
 
 const engine = Engine.create();
 const world = engine.world;
@@ -69,33 +66,42 @@ const render = Render.create({
 });
 
 const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*2, 100, { isStatic: true });
-const wallL = Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true });
-const wallR = Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight*2, { isStatic: true });
-Composite.add(world, [ground, wallL, wallR]);
+Composite.add(world, [ground]);
 
 const mouse = Mouse.create(render.canvas);
-const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.2, render: { visible: false } } });
+const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.1, render: { visible: false } } });
 Composite.add(world, mc);
 
-let corruptionLevel = 0;
+let damage = 0;
 let isDead = false;
 
-// Подготовка букв
-document.querySelectorAll('.data-text, h1, h2').forEach(el => {
+// Нарезаем текст на буквы
+document.querySelectorAll('.data-text, h1').forEach(el => {
     const text = el.innerText;
     el.innerHTML = '';
     text.split('').forEach(char => {
         const span = document.createElement('span');
         span.innerText = char;
         span.style.display = 'inline-block';
-        span.className = 'letter';
+        span.className = 'letter-unit';
         el.appendChild(span);
     });
 });
 
-function dropLetter(span) {
-    if (span.dataset.dropped || span.innerText.trim() === "" || isDead) return;
-    span.dataset.dropped = "true";
+function spawnArtifact() {
+    if (isDead) return;
+    const overlay = document.getElementById('glitch-overlay');
+    const art = document.createElement('div');
+    art.className = 'artifact';
+    art.style.top = Math.random() * 100 + '%';
+    art.style.background = `rgba(${Math.random()*255}, 0, 0, 0.4)`;
+    overlay.appendChild(art);
+    setTimeout(() => art.remove(), 100);
+}
+
+function breakThing(span) {
+    if (span.dataset.used || isDead || span.innerText.trim() === "") return;
+    span.dataset.used = "true";
     
     const rect = span.getBoundingClientRect();
     const style = window.getComputedStyle(span);
@@ -103,54 +109,55 @@ function dropLetter(span) {
     const canvas = document.createElement('canvas');
     canvas.width = 40; canvas.height = 40;
     const ctx = canvas.getContext('2d');
-    ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    ctx.font = `bold 18px ${style.fontFamily}`;
     ctx.fillText(span.innerText, 0, 30);
 
-    const body = Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, 12, 12, {
-        restitution: 0.1, friction: 0.5,
+    const body = Bodies.rectangle(rect.left, rect.top, 14, 14, {
+        restitution: 0.2,
         render: { sprite: { texture: canvas.toDataURL() } }
     });
 
     span.style.visibility = 'hidden';
     Composite.add(world, body);
-    corruptionLevel++;
+    damage++;
 
-    // Глюки и артефакты
-    if (corruptionLevel > 50) {
-        document.body.style.filter = `invert(${corruptionLevel/500}) hue-rotate(${corruptionLevel}deg)`;
-    }
+    // Эффекты по нарастающей
+    if (damage > 20) spawnArtifact();
+    if (damage > 100) document.body.classList.add('shake-effect');
     
-    if (corruptionLevel > 150) {
-        document.body.classList.add('glitch-heavy');
-    }
-
-    // Финальный вылет
-    if (corruptionLevel > 350 && !isDead) {
+    // ФИНАЛ: Переход в мертвую 503
+    if (damage > 300 && !isDead) {
         isDead = true;
-        setTimeout(() => {
-            document.getElementById('article-layer').style.display = 'none';
-            document.getElementById('physics-container').style.display = 'none';
-            document.getElementById('error-screen').style.display = 'block';
-            document.body.className = '';
-            document.body.style.filter = 'none';
-            document.body.style.background = '#fff';
-            // Полная остановка скриптов
-            Render.stop(render);
-            Runner.stop(runner);
-        }, 300);
+        
+        // Очищаем всё
+        document.getElementById('article-layer').remove();
+        document.getElementById('physics-container').remove();
+        document.getElementById('glitch-overlay').remove();
+        
+        // Показываем статичную 503
+        document.getElementById('error-screen').style.display = 'block';
+        document.body.classList.remove('shake-effect');
+        document.body.style.filter = 'none';
+        document.body.style.background = '#fff';
+        
+        // Убиваем движок физики совсем
+        Render.stop(render);
+        Runner.stop(runner);
+        engine.events = {};
+        world.bodies = [];
     }
 }
 
 window.addEventListener('mousemove', (e) => {
-    const target = document.elementFromPoint(e.clientX, e.clientY);
-    if (target && target.className === 'letter') dropLetter(target);
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    if (el && el.className === 'letter-unit') breakThing(el);
 });
 
 window.addEventListener('mousedown', () => {
-    const letters = Array.from(document.querySelectorAll('.letter:not([data-dropped])'));
-    for (let i = 0; i < 25; i++) {
-        const rand = Math.floor(Math.random() * letters.length);
-        if (letters[rand]) dropLetter(letters[rand]);
+    const letters = document.querySelectorAll('.letter-unit:not([data-used])');
+    for(let i=0; i<30; i++) {
+        const r = Math.floor(Math.random() * letters.length);
+        if(letters[r]) breakThing(letters[r]);
     }
 });
 
