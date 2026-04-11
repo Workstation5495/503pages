@@ -2,153 +2,137 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>503page</title>
+    <title>CPU_ARCHITECTURE_OVERVIEW</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; cursor: crosshair; }
-        canvas { position: absolute; top: 0; left: 0; }
+        body { margin: 0; overflow: hidden; background: #fff; font-family: "Times New Roman", serif; transition: filter 0.1s; }
+        #web-page { position: absolute; width: 100%; padding: 40px; box-sizing: border-box; color: #000; z-index: 1; }
+        h1 { font-size: 42px; border-bottom: 2px solid #000; padding-bottom: 10px; cursor: pointer; }
+        p { font-size: 18px; line-height: 1.6; max-width: 800px; cursor: pointer; padding: 5px; }
+        .code-block { font-family: monospace; background: #f0f0f0; padding: 15px; border-left: 5px solid #333; margin: 20px 0; }
         
-        /* Глитч-эффект для всего экрана */
-        .glitch { animation: shake 0.1s infinite; filter: hue-rotate(90deg); }
+        /* Глитчи */
+        .glitch-active { filter: invert(1) hue-rotate(180deg); animation: shake 0.05s infinite; }
         @keyframes shake {
-            0% { transform: translate(2px, 1px); }
-            50% { transform: translate(-2px, -1px); }
-            100% { transform: translate(1px, -2px); }
+            0% { transform: translate(5px, 5px); }
+            50% { transform: translate(-5px, -5px); }
+            100% { transform: translate(0, 0); }
         }
 
-        /* Трещины */
-        #cracks {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 500; opacity: 0.8;
-        }
-
-        /* Ошибка 503 */
-        #error-screen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 50px; z-index: 1000;
-            font-family: "Times New Roman", serif; cursor: pointer;
-        }
-        #error-screen h1 { font-size: 48px; margin: 0; }
+        #canvas-cracks { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 500; }
         
-        #ui-layer {
-            position: fixed; top: 10px; left: 10px; color: #0f0; 
-            font-family: monospace; font-size: 10px; z-index: 100;
+        /* Ошибка 503 */
+        #error-503 {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; color: #000; padding: 60px; z-index: 1000; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<div id="ui-layer">SYSTEM_VOLTAGE: CRITICAL<br>MEMORY_LEAK: DETECTED</div>
-<canvas id="cracks"></canvas>
-<div id="render-container"></div>
+<div id="web-page">
+    <h1 class="breakable">Central Processing Unit (CPU)</h1>
+    <p class="breakable">A central processing unit (CPU), also called a central processor or main processor, is the electronic circuitry that executes instructions comprising a computer program.</p>
+    <div class="code-block breakable">01001001 01001110 01010100 01000101 01001100</div>
+    <p class="breakable">The CPU performs basic arithmetic, logic, controlling, and input/output (I/O) operations specified by the instructions in the program.</p>
+    <p class="breakable">Fundamental components of a CPU include the arithmetic–logic unit (ALU) that performs arithmetic and logical operations.</p>
+    <h2 class="breakable">Microarchitecture and Design</h2>
+    <p class="breakable">Modern CPUs are implemented on integrated circuit (IC) chips, with one or more CPUs on a single IC chip called a microprocessor.</p>
+</div>
 
-<div id="error-screen" onclick="reboot()">
-    <h1>503 Service Unavailable</h1>
-    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems.</p>
+<canvas id="canvas-cracks"></canvas>
+<div id="physics-container"></div>
+
+<div id="error-503" onclick="location.reload()">
+    <h1 style="border:none">503 Service Unavailable</h1>
+    <p>The server is unable to handle your request due to a fatal processing error in the CPU registers.</p>
     <hr>
-    <address>Apache/2.4.41 (Ubuntu) Server at localhost Port 80</address>
-    <p style="margin-top:100px; font-weight:bold;">[ CLICK TO FORCE RECONSTRUCTION ]</p>
+    <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1</address>
+    <p style="margin-top:50px; color:red"><b>[ SYSTEM FAILURE ] CLICK TO TRY AGAIN</b></p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
 
-let engine, render, runner, audioCtx;
-let integrity = 100;
+const engine = Engine.create();
+const render = Render.create({
+    element: document.getElementById('physics-container'),
+    engine: engine,
+    options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
+});
 
-// Звуковой движок для глитчей
-function playGlitchSound() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(Math.random() * 500 + 50, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.1);
+const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth, 100, { isStatic: true });
+Composite.add(engine.world, ground);
+
+const mouse = Mouse.create(render.canvas);
+Composite.add(engine.world, MouseConstraint.create(engine, { mouse: mouse }));
+
+let breakCount = 0;
+const totalBreakable = document.querySelectorAll('.breakable').length;
+
+// Функция "Вырывания" куска сайта
+document.querySelectorAll('.breakable').forEach(el => {
+    el.addEventListener('mousedown', function(e) {
+        if(this.style.visibility === 'hidden') return;
+
+        breakCount++;
+        const rect = this.getBoundingClientRect();
+        
+        // Создаем физический объект на месте текста
+        const box = Bodies.rectangle(
+            rect.left + rect.width/2, 
+            rect.top + rect.height/2, 
+            rect.width, 
+            rect.height, 
+            { render: { sprite: { texture: elementToImage(this) } } }
+        );
+        
+        Composite.add(engine.world, box);
+        this.style.visibility = 'hidden'; // Скрываем оригинал
+
+        // Эффекты ужаса
+        triggerGlitch();
+        drawCrack(e.clientX, e.clientY);
+
+        if(breakCount >= totalBreakable) {
+            setTimeout(() => { document.getElementById('error-503').style.display = 'block'; }, 1500);
+        }
+    });
+});
+
+function elementToImage(el) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = el.offsetWidth;
+    canvas.height = el.offsetHeight;
+    ctx.font = window.getComputedStyle(el).font;
+    ctx.fillStyle = "#000";
+    ctx.fillText(el.innerText.substring(0, 50), 0, 30);
+    return canvas.toDataURL();
+}
+
+function triggerGlitch() {
+    document.body.classList.add('glitch-active');
+    setTimeout(() => document.body.classList.remove('glitch-active'), 100);
 }
 
 function drawCrack(x, y) {
-    const canvas = document.getElementById('cracks');
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
+    const can = document.getElementById('canvas-cracks');
+    can.width = window.innerWidth; can.height = window.innerHeight;
+    const ctx = can.getContext('2d');
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x, y);
-    for(let i=0; i<5; i++) {
-        ctx.lineTo(x + (Math.random()-0.5)*100, y + (Math.random()-0.5)*100);
+    for(let i=0; i<8; i++) {
+        ctx.lineTo(x + (Math.random()-0.5)*200, y + (Math.random()-0.5)*200);
     }
     ctx.stroke();
 }
 
-function init() {
-    const container = document.getElementById('render-container');
-    container.innerHTML = '';
-    const crackCanvas = document.getElementById('cracks');
-    crackCanvas.width = window.innerWidth;
-    crackCanvas.height = window.innerHeight;
-    
-    engine = Engine.create();
-    render = Render.create({
-        element: container,
-        engine: engine,
-        options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: '#000' }
-    });
-
-    const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth, 100, { isStatic: true });
-    Composite.add(engine.world, ground);
-
-    // Добавляем куски кода и текста
-    const codeSnippets = ["void main()", "{", "ptr = 0x00", "fatal_error", "if(null)", "assembly_bin", "01011010", "segmentation_fault"];
-    
-    for(let i=0; i<150; i++) {
-        setTimeout(() => {
-            let isText = Math.random() > 0.4;
-            let w = isText ? 120 : 15;
-            let h = isText ? 30 : 15;
-            let body = Bodies.rectangle(Math.random()*window.innerWidth, -100, w, h, {
-                render: { 
-                    fillStyle: isText ? '#111' : (Math.random() > 0.5 ? '#00f' : '#fff'),
-                    strokeStyle: '#0f0',
-                    lineWidth: isText ? 1 : 0
-                }
-            });
-            Composite.add(engine.world, body);
-        }, i * 30);
-    }
-
-    const mouse = Mouse.create(render.canvas);
-    Composite.add(engine.world, MouseConstraint.create(engine, { mouse: mouse }));
-
-    // Коллизии вызывают звуки и трещины
-    Events.on(engine, 'collisionStart', (event) => {
-        if(Math.random() > 0.8) {
-            playGlitchSound();
-            integrity -= 1;
-            if(integrity < 50) document.body.classList.add('glitch');
-            if(integrity <= 0) document.getElementById('error-screen').style.display = 'block';
-        }
-    });
-
-    Render.run(render);
-    runner = Runner.create();
-    Runner.run(runner, engine);
-}
-
-window.addEventListener('mousedown', (e) => {
-    drawCrack(e.clientX, e.clientY);
-    playGlitchSound();
-});
-
-function reboot() {
-    location.reload(); // Перезагружаем всё для новой сессии
-}
-
-init();
+Render.run(render);
+Runner.run(Runner.create(), engine);
 </script>
 </body>
 </html>
