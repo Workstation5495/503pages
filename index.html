@@ -12,7 +12,7 @@
         
         .artifact-line { position: fixed; left: 0; width: 100%; height: 2px; z-index: 1000; pointer-events: none; }
         .code-drop { position: fixed; font-family: monospace; font-size: 12px; color: #000; z-index: 900; pointer-events: none; white-space: nowrap; }
-
+ 
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; color: #000; padding: 50px; z-index: 1000000; font-family: "Arial", sans-serif;
@@ -28,10 +28,14 @@
             50% { transform: translate(-4px, 4px); filter: hue-rotate(180deg); }
             100% { transform: translate(2px, 2px); }
         }
+ 
+        span.char { display: inline-block; }
+        span.char.letter { margin-right: 4px; }
+        span.char.space  { margin-right: 10px; }
     </style>
 </head>
 <body>
-
+ 
 <div id="article-layer">
     <h1>Advanced Microarchitecture: Beyond the Silicon Limit</h1>
     <p class="data">The evolution of central processing units has reached a critical juncture where classical physics no longer provides a reliable framework for design. At the 2nm node and below, quantum tunneling becomes the dominant factor in gate leakage. This occurs when electrons bypass the insulating layer of a transistor, leading to non-deterministic states and massive thermal dissipation that threatens structural integrity.</p>
@@ -44,25 +48,18 @@
     
     <h2>3. Thermal Throttling and Die Dissolution</h2>
     <p class="data">At temperatures exceeding 105°C, the chemical bonds within the packaging substrate begin to weaken. Thermal throttling can only slow down the process; it cannot stop a full-scale ionic migration if the cooling loop fails. Once the logic gates lose their threshold voltage, the chip enters a state of permanent hardware exception, often referred to as "silicon death."</p>
-
+ 
     <h2>4. The Future of Photonic Compute</h2>
     <p class="data">Moving from electrons to photons for on-chip communication is the only way to bypass the current thermal wall. Photonic interconnects would allow for near-zero latency and zero heat generation from data transfer. However, integrating lasers directly onto silicon wafers remains a manufacturing nightmare, as any slight misalignment leads to immediate signal loss and total system halt.</p>
 </div>
-
-<div id="error-screen">
-    <h1>503 Service Unavailable</h1>
-    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
-    <hr>
-    <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
-</div>
-
+ 
 <div id="physics-container"></div>
-
+ 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-
+ 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Vector, Body } = Matter;
-
+const { Engine, Render, Runner, Bodies, Composite, Body } = Matter;
+ 
 const engine = Engine.create();
 const world = engine.world;
 const render = Render.create({
@@ -70,25 +67,26 @@ const render = Render.create({
     engine: engine,
     options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
 });
-
+ 
 const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*2, 100, { isStatic: true });
 Composite.add(world, [ground]);
-
+ 
 let damage = 0;
 let isDead = false;
-
+ 
+// Каждая буква → span.char.letter (margin-right: 4px = пробел между буквами)
+// Каждый пробел → span.char.space  (margin-right: 10px = пробел между словами)
 document.querySelectorAll('.data, h1, h2').forEach(el => {
     const text = el.innerText;
     el.innerHTML = '';
     text.split('').forEach(char => {
         const span = document.createElement('span');
         span.innerText = char;
-        span.className = 'char';
-        span.style.display = 'inline-block';
+        span.className = char === ' ' ? 'char space' : 'char letter';
         el.appendChild(span);
     });
 });
-
+ 
 function spawnCode() {
     if (isDead || damage < 200) return;
     const codes = ["0x000000F4", "0x0000007A", "0x0000007B", "0x0000000A", "0x000000F7", "0xc000000f", "0x0000001E"];
@@ -97,9 +95,7 @@ function spawnCode() {
     div.innerText = codes[Math.floor(Math.random()*codes.length)];
     div.style.left = Math.random() * 100 + '%';
     div.style.top = '-20px';
-    div.style.color = '#000'; 
     document.body.appendChild(div);
-    
     let pos = -20;
     const interval = setInterval(() => {
         pos += 10;
@@ -107,61 +103,59 @@ function spawnCode() {
         if (pos > window.innerHeight) { clearInterval(interval); div.remove(); }
     }, 30);
 }
-
+ 
 function spawnArtifact() {
     if (isDead) return;
     const line = document.createElement('div');
     line.className = 'artifact-line';
     line.style.top = Math.random() * 100 + '%';
-    line.style.background = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, 0.6)`;
+    line.style.background = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.6)`;
     document.body.appendChild(line);
     setTimeout(() => line.remove(), 40);
 }
-
+ 
 function breakChar(span, explosion = false) {
-    if (span.dataset.gone || isDead || span.innerText.trim() === "") return;
+    if (span.dataset.gone || isDead || !span.classList.contains('letter')) return;
     span.dataset.gone = "true";
-    
+ 
     const rect = span.getBoundingClientRect();
     const style = window.getComputedStyle(span);
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = 40; canvas.height = 40;
-    const ctx = canvas.getContext('2d');
+ 
+    const cvs = document.createElement('canvas');
+    cvs.width = 40; cvs.height = 40;
+    const ctx = cvs.getContext('2d');
     ctx.fillStyle = style.color;
     ctx.font = `bold 18px ${style.fontFamily}`;
     ctx.fillText(span.innerText, 0, 30);
-
+ 
     const body = Bodies.rectangle(rect.left, rect.top, 15, 15, {
         restitution: 0.5,
-        render: { sprite: { texture: canvas.toDataURL() } }
+        render: { sprite: { texture: cvs.toDataURL() } }
     });
-
+ 
     if (explosion) {
-        const force = 0.05;
-        Body.applyForce(body, body.position, { 
-            x: (Math.random() - 0.5) * force, 
-            y: (Math.random() - 0.5) * force 
+        Body.applyForce(body, body.position, {
+            x: (Math.random() - 0.5) * 0.05,
+            y: (Math.random() - 0.5) * 0.05
         });
     }
-
+ 
     span.style.visibility = 'hidden';
     Composite.add(world, body);
     damage++;
-
+ 
     if (damage % 5 === 0) spawnArtifact();
     if (damage > 150) spawnCode();
     if (damage > 300) document.body.classList.add('chaos-mode');
-
+ 
     if (damage > 800 && !isDead) {
         isDead = true;
         document.body.innerHTML = '';
         const err = document.createElement('div');
-        err.id = 'error-screen';
-        err.style.display = 'block';
+        err.style.cssText = 'display:block;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;color:#000;padding:50px;z-index:1000000;font-family:Arial,sans-serif;box-sizing:border-box;';
         err.innerHTML = `
-            <h1>503 Service Unavailable</h1>
-            <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
+            <h1 style="font-size:32px;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:20px;font-weight:normal;">503 Service Unavailable</h1>
+            <p style="font-size:16px;color:#333;">The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
             <hr>
             <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
         `;
@@ -172,21 +166,20 @@ function breakChar(span, explosion = false) {
         Runner.stop(runner);
     }
 }
-
+ 
 window.addEventListener('mousemove', (e) => {
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (el && el.className === 'char') breakChar(el);
+    if (el && el.classList && el.classList.contains('char')) breakChar(el);
 });
-
+ 
 window.addEventListener('mousedown', (e) => {
-    const chars = document.querySelectorAll('.char:not([data-gone])');
-    chars.forEach(char => {
+    document.querySelectorAll('.char.letter:not([data-gone])').forEach(char => {
         const rect = char.getBoundingClientRect();
         const dist = Math.hypot(rect.left - e.clientX, rect.top - e.clientY);
         if (dist < 150) breakChar(char, true);
     });
 });
-
+ 
 const runner = Runner.create();
 Render.run(render);
 Runner.run(runner, engine);
