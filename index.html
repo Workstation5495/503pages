@@ -5,49 +5,55 @@
     <title>503pages</title>
     <style>
         body { margin: 0; overflow: hidden; background: #fff; font-family: "Segoe UI", sans-serif; color: #1a1a1a; user-select: none; }
-        #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 1; }
-        h1 { font-size: 42px; color: #000; border-bottom: 2px solid #eee; padding-bottom: 20px; }
-        p { font-size: 18px; line-height: 1.8; max-width: 850px; color: #333; }
+        #article-layer { position: absolute; width: 100%; padding: 80px; box-sizing: border-box; z-index: 5; background: #fff; }
+        h1 { font-size: 50px; border-bottom: 3px solid #000; padding-bottom: 10px; }
+        h2 { font-size: 28px; margin-top: 40px; color: #0044cc; }
+        p { font-size: 19px; line-height: 1.7; max-width: 950px; margin-bottom: 25px; }
         
-        /* Полоски-артефакты */
-        #glitch-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
-        .artifact { position: absolute; background: rgba(255,0,0,0.3); height: 2px; width: 100%; }
+        .artifact-line { position: fixed; left: 0; width: 100%; height: 1px; background: rgba(0,0,0,0.2); z-index: 100; pointer-events: none; }
+        .dead-pixel { position: fixed; background: #000; width: 4px; height: 4px; z-index: 200; pointer-events: none; }
 
-        /* Та самая 503 — АБСОЛЮТНО СТАТИЧНАЯ */
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 60px; z-index: 1000000; font-family: "Times New Roman", serif;
-            pointer-events: all;
+            background: #fff; color: #000; padding: 80px; z-index: 1000000; font-family: "Times New Roman", serif;
         }
-        #error-screen h1 { font-size: 36px; border-bottom: 1px solid #000; width: fit-content; margin-bottom: 20px; }
+        #error-screen h1 { font-size: 40px; border-bottom: 2px solid #000; margin-bottom: 30px; width: fit-content; }
         
         canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 50; }
         
-        .shake-effect { animation: shake 0.05s infinite; }
-        @keyframes shake {
-            0% { transform: translate(3px, -3px); filter: hue-rotate(90deg); }
-            50% { transform: translate(-3px, 3px); filter: invert(1); }
-            100% { transform: translate(0, 0); }
+        .hard-glitch { animation: flash 0.1s infinite; }
+        @keyframes flash {
+            0% { filter: invert(0) contrast(1); }
+            50% { filter: invert(1) contrast(5); transform: scale(1.01); }
+            100% { filter: invert(0) contrast(1); }
         }
     </style>
 </head>
 <body>
 
-<div id="glitch-overlay"></div>
-
 <div id="article-layer">
-    <h1>Architecture Evolution: Sub-atomic Interconnects</h1>
-    <p class="data-text">Technical analysis of 2nm micro-architecture. In the current iteration of silicon design, electron tunneling has become the primary bottleneck. To counteract this, manufacturers are implementing liquid-state logic gates.</p>
-    <p class="data-text">The L3 cache is now distributed across the entire die surface, creating a "neural mesh" of data. Any physical disturbance in the substrate leads to a cascade of register failures.</p>
-    <p class="data-text">When the instruction pointer hits a corrupted address, the CPU enters a recursive loop of destruction. The hardware cannot recover from a logic-gate meltdown once the synchronization clock is lost.</p>
+    <h1>Advanced Microarchitecture & Quantum Effects</h1>
+    <p class="data">The journey beyond 2nm nodes represents a fundamental shift in computing. Traditional silicon-based transistors are reaching their physical limits due to electron tunneling. When the gate oxide layer becomes too thin, electrons simply pass through it, creating a "leaky" state that generates immense heat and data corruption.</p>
+    
+    <h2>1. The Rise of Backside Power Delivery</h2>
+    <p class="data">Intel’s PowerVia and TSMC’s backside rail technologies are the current solution. By moving power delivery to the back of the wafer, interconnect congestion is reduced. However, this increases mechanical stress on the crystalline structure, making the CPU vulnerable to micro-fractures during high-voltage spikes.</p>
+    
+    <h2>2. Cache Coherency and Logic Failure</h2>
+    <p class="data">In a multi-tile (chiplet) design, the Infinity Fabric or NVLink must maintain absolute synchronization. If a single packet is delayed by even a picosecond, the instruction pointer can jump to an invalid memory region. This results in "Undefined Behavior" where the hardware begins to execute its own memory as code.</p>
+    
+    <h2>3. Thermal Cascading</h2>
+    <p class="data">When a hot spot forms near the Arithmetic Logic Unit (ALU), it triggers a cascade. Nearby transistors lose their switching speed, leading to logic errors. The system attempts to throttle, but if the cooling solution fails, the silicon reaches a "glass transition temperature" where the physical circuit melts into noise.</p>
+    
+    <h2>4. Speculative Execution Risks</h2>
+    <p class="data">Modern branch predictors use neural networks to guess the next 1000 instructions. If a malicious interrupt occurs during this prediction, the CPU can be forced into an infinite loop, exhausting the register file and causing a hardware-level exception that the OS cannot catch.</p>
 </div>
 
 <div id="error-screen">
     <h1>503 Service Unavailable</h1>
-    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
+    <p>CRITICAL_HARDWARE_DISSOLUTION: The requested resource is unavailable due to an irrecoverable logic-gate failure on the host processor.</p>
     <hr>
-    <address>Apache/2.4.52 (Ubuntu) Server at 127.0.0.1 Port 80</address>
-    <p style="margin-top: 40px; color: #666; font-size: 14px;">[ REBOOT REQUIRED ]</p>
+    <address>Apache Server Status: [ OFFLINE ]</address>
+    <p style="margin-top: 50px; font-weight: bold;">PLEASE REFRESH THE BROWSER TO ATTEMPT COLD REBOOT.</p>
 </div>
 
 <div id="physics-container"></div>
@@ -55,7 +61,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Constraint } = Matter;
 
 const engine = Engine.create();
 const world = engine.world;
@@ -69,39 +75,48 @@ const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, wind
 Composite.add(world, [ground]);
 
 const mouse = Mouse.create(render.canvas);
-const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.1, render: { visible: false } } });
+const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.05, render: { visible: false } } });
 Composite.add(world, mc);
 
-let damage = 0;
+let corruption = 0;
 let isDead = false;
 
-// Нарезаем текст на буквы
-document.querySelectorAll('.data-text, h1').forEach(el => {
+// Создаем "живой" текст
+document.querySelectorAll('.data, h1, h2').forEach(el => {
     const text = el.innerText;
     el.innerHTML = '';
     text.split('').forEach(char => {
         const span = document.createElement('span');
         span.innerText = char;
         span.style.display = 'inline-block';
-        span.className = 'letter-unit';
+        span.className = 'char';
         el.appendChild(span);
     });
 });
 
-function spawnArtifact() {
+function addGlitch() {
     if (isDead) return;
-    const overlay = document.getElementById('glitch-overlay');
-    const art = document.createElement('div');
-    art.className = 'artifact';
-    art.style.top = Math.random() * 100 + '%';
-    art.style.background = `rgba(${Math.random()*255}, 0, 0, 0.4)`;
-    overlay.appendChild(art);
-    setTimeout(() => art.remove(), 100);
+    // Линии артефактов
+    const line = document.createElement('div');
+    line.className = 'artifact-line';
+    line.style.top = Math.random() * 100 + '%';
+    line.style.background = `rgba(${Math.random()*255},0,0,0.5)`;
+    document.body.appendChild(line);
+    setTimeout(() => line.remove(), 50);
+
+    // Битые пиксели
+    if (Math.random() > 0.8) {
+        const p = document.createElement('div');
+        p.className = 'dead-pixel';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.top = Math.random() * 100 + '%';
+        document.body.appendChild(p);
+    }
 }
 
-function breakThing(span) {
-    if (span.dataset.used || isDead || span.innerText.trim() === "") return;
-    span.dataset.used = "true";
+function breakChar(span) {
+    if (span.dataset.torn || isDead || span.innerText.trim() === "") return;
+    span.dataset.torn = "true";
     
     const rect = span.getBoundingClientRect();
     const style = window.getComputedStyle(span);
@@ -109,55 +124,61 @@ function breakThing(span) {
     const canvas = document.createElement('canvas');
     canvas.width = 40; canvas.height = 40;
     const ctx = canvas.getContext('2d');
+    ctx.fillStyle = style.color;
     ctx.font = `bold 18px ${style.fontFamily}`;
     ctx.fillText(span.innerText, 0, 30);
 
-    const body = Bodies.rectangle(rect.left, rect.top, 14, 14, {
-        restitution: 0.2,
+    const body = Bodies.rectangle(rect.left, rect.top, 12, 12, {
+        restitution: 0.1,
         render: { sprite: { texture: canvas.toDataURL() } }
     });
 
     span.style.visibility = 'hidden';
     Composite.add(world, body);
-    damage++;
+    corruption++;
 
-    // Эффекты по нарастающей
-    if (damage > 20) spawnArtifact();
-    if (damage > 100) document.body.classList.add('shake-effect');
-    
-    // ФИНАЛ: Переход в мертвую 503
-    if (damage > 300 && !isDead) {
+    if (corruption > 30) addGlitch();
+    if (corruption > 150) document.body.classList.add('hard-glitch');
+
+    // ФИНАЛЬНЫЙ УДАР
+    if (corruption > 500 && !isDead) {
         isDead = true;
         
-        // Очищаем всё
-        document.getElementById('article-layer').remove();
-        document.getElementById('physics-container').remove();
-        document.getElementById('glitch-overlay').remove();
+        // Жесткая очистка всего
+        document.body.innerHTML = ''; 
         
-        // Показываем статичную 503
-        document.getElementById('error-screen').style.display = 'block';
-        document.body.classList.remove('shake-effect');
-        document.body.style.filter = 'none';
+        // Создаем заново только экран ошибки
+        const err = document.createElement('div');
+        err.id = 'error-screen';
+        err.style.display = 'block';
+        err.innerHTML = `
+            <h1>503 Service Unavailable</h1>
+            <p>CRITICAL_SYSTEM_FAILURE: The processor has undergone permanent silicon degradation.</p>
+            <hr>
+            <address>Status: [ HARDWARE_HALTED ]</address>
+            <p style="margin-top: 50px;">F5 TO REBOOT</p>
+        `;
+        document.body.appendChild(err);
         document.body.style.background = '#fff';
+        document.body.className = '';
         
-        // Убиваем движок физики совсем
+        // Стоп машина
         Render.stop(render);
         Runner.stop(runner);
-        engine.events = {};
-        world.bodies = [];
     }
 }
 
 window.addEventListener('mousemove', (e) => {
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (el && el.className === 'letter-unit') breakThing(el);
+    if (el && el.className === 'char') breakChar(el);
 });
 
-window.addEventListener('mousedown', () => {
-    const letters = document.querySelectorAll('.letter-unit:not([data-used])');
-    for(let i=0; i<30; i++) {
-        const r = Math.floor(Math.random() * letters.length);
-        if(letters[r]) breakThing(letters[r]);
+// Клик вызывает мощный "выброс напряжения"
+window.addEventListener('mousedown', (e) => {
+    const chars = document.querySelectorAll('.char:not([data-torn])');
+    for (let i = 0; i < 50; i++) {
+        const r = Math.floor(Math.random() * chars.length);
+        if (chars[r]) breakChar(chars[r]);
     }
 });
 
