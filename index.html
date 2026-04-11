@@ -2,98 +2,136 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WIKI_PHYSICS</title>
+    <title>503page</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff; }
-        #render-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        body { margin: 0; overflow: hidden; background: #000; cursor: crosshair; }
+        canvas { position: absolute; top: 0; left: 0; }
         
-        /* Та самая белая ошибка */
+        /* Глитч-эффект для всего экрана */
+        .glitch { animation: shake 0.1s infinite; filter: hue-rotate(90deg); }
+        @keyframes shake {
+            0% { transform: translate(2px, 1px); }
+            50% { transform: translate(-2px, -1px); }
+            100% { transform: translate(1px, -2px); }
+        }
+
+        /* Трещины */
+        #cracks {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 500; opacity: 0.8;
+        }
+
+        /* Ошибка 503 */
         #error-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; color: #000; padding: 60px; z-index: 1000; cursor: pointer;
-            box-sizing: border-box; font-family: "Times New Roman", serif;
+            background: #fff; color: #000; padding: 50px; z-index: 1000;
+            font-family: "Times New Roman", serif; cursor: pointer;
         }
-        #error-screen h1 { font-size: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
-        #error-screen p { font-size: 20px; }
+        #error-screen h1 { font-size: 48px; margin: 0; }
+        
+        #ui-layer {
+            position: fixed; top: 10px; left: 10px; color: #0f0; 
+            font-family: monospace; font-size: 10px; z-index: 100;
+        }
     </style>
 </head>
 <body>
 
+<div id="ui-layer">SYSTEM_VOLTAGE: CRITICAL<br>MEMORY_LEAK: DETECTED</div>
+<canvas id="cracks"></canvas>
 <div id="render-container"></div>
 
-<div id="error-screen" onclick="reconstruct()">
-    <div id="err-text">
-        <h1>503 Service Unavailable</h1>
-        <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
-        <p style="margin-top: 50px; color: #888;">[ SYSTEM_FAILURE: CLICK_TO_REBOOT ]</p>
-    </div>
+<div id="error-screen" onclick="reboot()">
+    <h1>503 Service Unavailable</h1>
+    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems.</p>
+    <hr>
+    <address>Apache/2.4.41 (Ubuntu) Server at localhost Port 80</address>
+    <p style="margin-top:100px; font-weight:bold;">[ CLICK TO FORCE RECONSTRUCTION ]</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events } = Matter;
 
-let engine, render, runner;
-let clicks = 0;
+let engine, render, runner, audioCtx;
+let integrity = 100;
 
-const articles = [
-    {t: "QUANTUM GRAVITY", c: "THEORETICAL PHYSICS ATTEMPTING TO DESCRIBE GRAVITY ACCORDING TO QUANTUM MECHANICS"},
-    {t: "CYBERNETICS", c: "CONTROL AND COMMUNICATION IN THE ANIMAL AND THE MACHINE COMPLEX SYSTEMS"},
-    {t: "VOID AESTHETICS", c: "THE STUDY OF EMPTY SPACES AND MINIMALIST DIGITAL STRUCTURES"},
-    {t: "ARTIFICIAL INTELLIGENCE", c: "NON-BIOLOGICAL ENTITIES CAPABLE OF PROCESSING COMPLEX DATA STREAMS"},
-    {t: "ENTROPY", c: "THE GRADUAL DECLINE INTO DISORDER WITHIN A CLOSED PHYSICAL SYSTEM"},
-    {t: "NEURAL NETWORK", c: "COMPUTATIONAL MODELS INSPIRED BY THE BIOLOGICAL STRUCTURE OF BRAINS"},
-    {t: "EVENT HORIZON", c: "A BOUNDARY BEYOND WHICH EVENTS CANNOT AFFECT AN OBSERVER"},
-    {t: "SIMULATION THEORY", c: "PROPOSAL THAT ALL REALITY IS AN ARTIFICIAL MATHEMATICAL CONSTRUCT"},
-    {t: "NANOTECHNOLOGY", c: "MANIPULATION OF MATTER ON AN ATOMIC AND MOLECULAR SCALE"},
-    {t: "DARK MATTER", c: "A FORM OF MATTER THAT DOES NOT EMIT LIGHT OR ENERGY"}
-];
+// Звуковой движок для глитчей
+function playGlitchSound() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(Math.random() * 500 + 50, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
+
+function drawCrack(x, y) {
+    const canvas = document.getElementById('cracks');
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    for(let i=0; i<5; i++) {
+        ctx.lineTo(x + (Math.random()-0.5)*100, y + (Math.random()-0.5)*100);
+    }
+    ctx.stroke();
+}
 
 function init() {
-    if(render) {
-        render.canvas.remove();
-        Render.stop(render);
-        Runner.stop(runner);
-    }
-
+    const container = document.getElementById('render-container');
+    container.innerHTML = '';
+    const crackCanvas = document.getElementById('cracks');
+    crackCanvas.width = window.innerWidth;
+    crackCanvas.height = window.innerHeight;
+    
     engine = Engine.create();
     render = Render.create({
-        element: document.getElementById('render-container'),
+        element: container,
         engine: engine,
-        options: { 
-            width: window.innerWidth, 
-            height: window.innerHeight, 
-            wireframes: false, 
-            background: '#fff' 
-        }
+        options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: '#000' }
     });
 
-    const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth, 100, {isStatic:true});
-    const wallL = Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, {isStatic:true});
-    const wallR = Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight, {isStatic:true});
-    Composite.add(engine.world, [ground, wallL, wallR]);
+    const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth, 100, { isStatic: true });
+    Composite.add(engine.world, ground);
+
+    // Добавляем куски кода и текста
+    const codeSnippets = ["void main()", "{", "ptr = 0x00", "fatal_error", "if(null)", "assembly_bin", "01011010", "segmentation_fault"];
+    
+    for(let i=0; i<150; i++) {
+        setTimeout(() => {
+            let isText = Math.random() > 0.4;
+            let w = isText ? 120 : 15;
+            let h = isText ? 30 : 15;
+            let body = Bodies.rectangle(Math.random()*window.innerWidth, -100, w, h, {
+                render: { 
+                    fillStyle: isText ? '#111' : (Math.random() > 0.5 ? '#00f' : '#fff'),
+                    strokeStyle: '#0f0',
+                    lineWidth: isText ? 1 : 0
+                }
+            });
+            Composite.add(engine.world, body);
+        }, i * 30);
+    }
 
     const mouse = Mouse.create(render.canvas);
-    Composite.add(engine.world, MouseConstraint.create(engine, {mouse: mouse}));
+    Composite.add(engine.world, MouseConstraint.create(engine, { mouse: mouse }));
 
-    const art = articles[Math.floor(Math.random() * articles.length)];
-    
-    // Заголовок (большой блок)
-    const title = Bodies.rectangle(window.innerWidth/2, 100, 700, 80, {
-        render: { sprite: { texture: drawCanvas(art.t, 50, true) } }
-    });
-    Composite.add(engine.world, title);
-
-    // Куски текста (средние блоки)
-    const words = art.c.split(' ');
-    words.forEach((word, i) => {
-        setTimeout(() => {
-            const b = Bodies.rectangle(Math.random()*window.innerWidth, -100, 200, 50, {
-                render: { sprite: { texture: drawCanvas(word, 24, false) } }
-            });
-            Composite.add(engine.world, b);
-        }, i * 150);
+    // Коллизии вызывают звуки и трещины
+    Events.on(engine, 'collisionStart', (event) => {
+        if(Math.random() > 0.8) {
+            playGlitchSound();
+            integrity -= 1;
+            if(integrity < 50) document.body.classList.add('glitch');
+            if(integrity <= 0) document.getElementById('error-screen').style.display = 'block';
+        }
     });
 
     Render.run(render);
@@ -101,33 +139,13 @@ function init() {
     Runner.run(runner, engine);
 }
 
-function drawCanvas(txt, size, isBold) {
-    const can = document.createElement('canvas');
-    const ctx = can.getContext('2d');
-    can.width = 750; can.height = 100;
-    ctx.font = `${isBold ? 'bold' : ''} ${size}px Courier New`;
-    ctx.fillStyle = "#000";
-    ctx.fillText(txt, 20, 60);
-    return can.toDataURL();
-}
-
-window.addEventListener('mousedown', () => {
-    clicks++;
-    if(clicks > 12) document.getElementById('error-screen').style.display = 'block';
+window.addEventListener('mousedown', (e) => {
+    drawCrack(e.clientX, e.clientY);
+    playGlitchSound();
 });
 
-function reconstruct() {
-    clicks = 0;
-    const err = document.getElementById('err-text');
-    err.style.transition = "transform 0.4s ease-in, opacity 0.4s";
-    err.style.transform = "scale(2) rotate(10deg)";
-    err.style.opacity = "0";
-    
-    setTimeout(() => {
-        err.style.transform = "scale(1) rotate(0deg)";
-        err.style.opacity = "1";
-        init();
-    }, 400);
+function reboot() {
+    location.reload(); // Перезагружаем всё для новой сессии
 }
 
 init();
