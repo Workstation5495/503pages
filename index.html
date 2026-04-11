@@ -2,58 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>503page</title>
+    <title>503pages</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff; font-family: "Times New Roman", serif; transition: filter 0.1s; }
-        #web-page { position: absolute; width: 100%; padding: 40px; box-sizing: border-box; color: #000; z-index: 1; }
-        h1 { font-size: 42px; border-bottom: 2px solid #000; padding-bottom: 10px; cursor: pointer; }
-        p { font-size: 18px; line-height: 1.6; max-width: 800px; cursor: pointer; padding: 5px; }
-        .code-block { font-family: monospace; background: #f0f0f0; padding: 15px; border-left: 5px solid #333; margin: 20px 0; }
+        body { margin: 0; overflow: hidden; background: #fff; font-family: "Times New Roman", serif; }
+        #web-page { position: absolute; width: 100%; padding: 60px; box-sizing: border-box; z-index: 1; pointer-events: none; }
+        h1 { font-size: 55px; margin: 0 0 20px 0; }
+        p { font-size: 20px; max-width: 900px; line-height: 1.5; margin-bottom: 20px; }
+        hr { border: 1px solid #000; margin: 30px 0; }
         
-        /* Глитчи */
-        .glitch-active { filter: invert(1) hue-rotate(180deg); animation: shake 0.05s infinite; }
-        @keyframes shake {
-            0% { transform: translate(5px, 5px); }
-            50% { transform: translate(-5px, -5px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        #canvas-cracks { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 500; }
+        canvas { position: absolute; top: 0; left: 0; }
+        #overlay-canvas { z-index: 500; pointer-events: none; }
         
-        /* Ошибка 503 */
         #error-503 {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; color: #000; padding: 60px; z-index: 1000; cursor: pointer;
         }
     </style>
 </head>
-<body>
+<body onclick="initAudio()">
 
 <div id="web-page">
-    <h1 class="breakable">Central Processing Unit (CPU)</h1>
-    <p class="breakable">A central processing unit (CPU), also called a central processor or main processor, is the electronic circuitry that executes instructions comprising a computer program.</p>
-    <div class="code-block breakable">01001001 01001110 01010100 01000101 01001100</div>
-    <p class="breakable">The CPU performs basic arithmetic, logic, controlling, and input/output (I/O) operations specified by the instructions in the program.</p>
-    <p class="breakable">Fundamental components of a CPU include the arithmetic–logic unit (ALU) that performs arithmetic and logical operations.</p>
-    <h2 class="breakable">Microarchitecture and Design</h2>
-    <p class="breakable">Modern CPUs are implemented on integrated circuit (IC) chips, with one or more CPUs on a single IC chip called a microprocessor.</p>
+    <h1>Architecture of Modern CPU</h1>
+    <p>The central processing unit (CPU) is the primary component of a computer that acts as its "control center." It interprets and executes most of the commands from the computer's other hardware and software.</p>
+    <hr>
+    <p>Every instruction, no matter how simple, has to go through the CPU. Let's say you type the letter 'A' on your keyboard: the CPU instructions tell the computer to display that 'A' on the screen. It uses logic gates to process binary data.</p>
+    <p>A typical CPU consists of the control unit, which fetches instructions from memory and decodes them into executable commands, and the arithmetic logic unit (ALU), which performs mathematical and logical operations.</p>
+    <hr>
+    <p>Overclocking is the practice of increasing a component's clock rate, running it at a higher speed than it was designed to run. This leads to <b>instability</b> and <b>hardware failure</b>.</p>
 </div>
 
-<canvas id="canvas-cracks"></canvas>
+<canvas id="overlay-canvas"></canvas>
 <div id="physics-container"></div>
 
 <div id="error-503" onclick="location.reload()">
-    <h1 style="border:none">503 Service Unavailable</h1>
-    <p>The server is unable to handle your request due to a fatal processing error in the CPU registers.</p>
+    <h1 style="font-size: 40px;">503 Service Unavailable</h1>
+    <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
     <hr>
-    <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1</address>
-    <p style="margin-top:50px; color:red"><b>[ SYSTEM FAILURE ] CLICK TO TRY AGAIN</b></p>
+    <address>Apache/2.4.41 (Ubuntu) Server at 127.0.0.1 Port 80</address>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
 <script>
-const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
+const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events } = Matter;
+
+let audioInit = false, audioCtx, totalChaos = 0;
+
+function initAudio() {
+    if (audioInit) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioInit = true;
+}
+
+function playGlitch() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = Math.random() > 0.5 ? 'sawtooth' : 'square';
+    osc.frequency.setValueAtTime(Math.random() * 200 + 50, audioCtx.currentTime);
+    g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+}
 
 const engine = Engine.create();
 const render = Render.create({
@@ -62,74 +73,85 @@ const render = Render.create({
     options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
 });
 
-const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth, 100, { isStatic: true });
-Composite.add(engine.world, ground);
+const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight+50, window.innerWidth*5, 100, { isStatic: true });
+const wallL = Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight*5, { isStatic: true });
+const wallR = Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight*5, { isStatic: true });
+Composite.add(engine.world, [ground, wallL, wallR]);
 
 const mouse = Mouse.create(render.canvas);
-Composite.add(engine.world, MouseConstraint.create(engine, { mouse: mouse }));
+const mc = MouseConstraint.create(engine, { mouse: mouse });
+Composite.add(engine.world, mc);
 
-let breakCount = 0;
-const totalBreakable = document.querySelectorAll('.breakable').length;
+const overlay = document.getElementById('overlay-canvas');
+const oCtx = overlay.getContext('2d');
+overlay.width = window.innerWidth; overlay.height = window.innerHeight;
 
-// Функция "Вырывания" куска сайта
-document.querySelectorAll('.breakable').forEach(el => {
-    el.addEventListener('mousedown', function(e) {
-        if(this.style.visibility === 'hidden') return;
-
-        breakCount++;
-        const rect = this.getBoundingClientRect();
-        
-        // Создаем физический объект на месте текста
-        const box = Bodies.rectangle(
-            rect.left + rect.width/2, 
-            rect.top + rect.height/2, 
-            rect.width, 
-            rect.height, 
-            { render: { sprite: { texture: elementToImage(this) } } }
-        );
-        
-        Composite.add(engine.world, box);
-        this.style.visibility = 'hidden'; // Скрываем оригинал
-
-        // Эффекты ужаса
-        triggerGlitch();
-        drawCrack(e.clientX, e.clientY);
-
-        if(breakCount >= totalBreakable) {
-            setTimeout(() => { document.getElementById('error-503').style.display = 'block'; }, 1500);
-        }
+function breakPage() {
+    const tags = ["h1", "p", "hr"];
+    tags.forEach(tag => {
+        document.querySelectorAll('#web-page ' + tag).forEach(el => {
+            const rect = el.getBoundingClientRect();
+            if (tag === "p") {
+                el.innerText.split(" ").forEach((word, i) => {
+                    createFragment(rect.left + (i * 30) % rect.width, rect.top + (Math.floor(i * 30 / rect.width) * 25), word, 18);
+                });
+            } else if (tag === "hr") {
+                createFragment(rect.left + rect.width/2, rect.top, "──────────────", 20);
+            } else {
+                createFragment(rect.left + rect.width/2, rect.top + rect.height/2, el.innerText, 45);
+            }
+            el.style.opacity = "0";
+        });
     });
+}
+
+function createFragment(x, y, txt, size) {
+    const can = document.createElement('canvas');
+    const ctx = can.getContext('2d');
+    can.width = txt.length * size; can.height = size * 2;
+    ctx.font = `bold ${size}px "Times New Roman"`;
+    ctx.fillStyle = "#000";
+    ctx.fillText(txt, 0, size);
+
+    const body = Bodies.rectangle(x, y, txt.length * (size/2), size, {
+        restitution: 0.4,
+        render: { sprite: { texture: can.toDataURL() } }
+    });
+    Composite.add(engine.world, body);
+}
+
+window.addEventListener('mousedown', (e) => {
+    if(!audioInit) initAudio();
+    totalChaos++;
+    playGlitch();
+    
+    // Трещины на экране
+    oCtx.strokeStyle = "rgba(0,0,0,0.7)";
+    oCtx.beginPath();
+    oCtx.moveTo(e.clientX, e.clientY);
+    for(let i=0; i<6; i++) oCtx.lineTo(e.clientX + (Math.random()-0.5)*400, e.clientY + (Math.random()-0.5)*400);
+    oCtx.stroke();
+
+    // Глитч-инверсия
+    if(totalChaos > 3) {
+        document.body.style.filter = `invert(${Math.random() > 0.5 ? 1 : 0})`;
+        setTimeout(() => document.body.style.filter = "none", 40);
+    }
+
+    if(totalChaos === 1) breakPage();
+
+    if(totalChaos > 35) {
+        document.getElementById('error-503').style.display = 'block';
+    }
 });
 
-function elementToImage(el) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = el.offsetWidth;
-    canvas.height = el.offsetHeight;
-    ctx.font = window.getComputedStyle(el).font;
-    ctx.fillStyle = "#000";
-    ctx.fillText(el.innerText.substring(0, 50), 0, 30);
-    return canvas.toDataURL();
-}
-
-function triggerGlitch() {
-    document.body.classList.add('glitch-active');
-    setTimeout(() => document.body.classList.remove('glitch-active'), 100);
-}
-
-function drawCrack(x, y) {
-    const can = document.getElementById('canvas-cracks');
-    can.width = window.innerWidth; can.height = window.innerHeight;
-    const ctx = can.getContext('2d');
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    for(let i=0; i<8; i++) {
-        ctx.lineTo(x + (Math.random()-0.5)*200, y + (Math.random()-0.5)*200);
+// Случайные артефакты при сильном разрушении
+Events.on(engine, 'afterUpdate', () => {
+    if(totalChaos > 20 && Math.random() > 0.95) {
+        oCtx.fillStyle = `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
+        oCtx.fillRect(0, Math.random()*window.innerHeight, window.innerWidth, 2);
     }
-    ctx.stroke();
-}
+});
 
 Render.run(render);
 Runner.run(Runner.create(), engine);
